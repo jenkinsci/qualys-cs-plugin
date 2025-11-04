@@ -27,7 +27,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.CheckForNull;
+import jakarta.annotation.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -101,7 +101,7 @@ public class CertificateUtils {
 	/**
 	 * Return private key ("key.pem") from Reader
 	 */
-	@CheckForNull
+	@Nullable
 	public static PrivateKey loadPrivateKey(final Reader reader)
 			throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
 		try (PEMParser pemParser = new PEMParser(reader)) {
@@ -122,7 +122,7 @@ public class CertificateUtils {
 	 * Find a PrivateKeyInfo in the PEM object details. Returns null if the PEM
 	 * object type is unknown.
 	 */
-	@CheckForNull
+	@Nullable
 	private static PrivateKeyInfo getPrivateKeyInfoOrNull(Object pemObject) throws NoSuchAlgorithmException {
 		PrivateKeyInfo privateKeyInfo = null;
 		if (pemObject instanceof PEMKeyPair) {
@@ -143,7 +143,7 @@ public class CertificateUtils {
 	/**
 	 * Return KeyPair from "key.pem"
 	 */
-	@CheckForNull
+	@Nullable
 	public static PrivateKey loadPrivateKey(final String keypem)
 			throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
 		try (StringReader certReader = new StringReader(keypem);

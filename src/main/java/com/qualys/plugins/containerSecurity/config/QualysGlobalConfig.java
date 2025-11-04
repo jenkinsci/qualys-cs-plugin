@@ -2,6 +2,8 @@ package com.qualys.plugins.containerSecurity.config;
 
 import java.io.File;
 import java.util.*;
+
+import com.qualys.plugins.common.QualysAuth.AuthType;
 import hudson.util.ListBoxModel.Option;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -227,7 +229,8 @@ public class QualysGlobalConfig extends GlobalConfiguration {
 				return FormValidation.error("Invalid inputs for the following fields: " + String.join(", ", invalidFields));
     			
     		QualysAuth auth = new QualysAuth();
-        	auth.setQualysCredentials(apiServer, apiUser, apiPass);
+        	auth.setQualysCredentials(apiServer, AuthType.Basic, apiUser, apiPass,"","");
+
         	if(useProxy) {
             	int proxyPortInt = Integer.parseInt(proxyPort);
             	auth.setProxyCredentials(proxyServer, proxyUsername, proxyPassword, proxyPortInt);

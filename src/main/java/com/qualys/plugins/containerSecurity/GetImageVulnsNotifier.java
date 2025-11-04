@@ -7,9 +7,10 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import hudson.util.ListBoxModel.Option;
 
-import javax.annotation.Nonnull;
+
+import com.qualys.plugins.common.QualysAuth.AuthType;
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -923,7 +924,7 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
 				if (credential != null) {
 					apiUserVal = credential.getUsername();
 					apiPassVal = credential.getPassword().getPlainText();
-					if(apiPassVal.trim().equals("") || apiUserVal.trim().equals("")) {
+					if(apiPassVal.trim().isEmpty() || apiUserVal.trim().isEmpty()) {
 						throw new Exception("Username and/or Password field is empty for credentials id: " + credentialsId);
 					}
 				}else {
@@ -939,7 +940,8 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
 		String proxyPasswordVal = "";
     	//test connection first
     	QualysAuth auth = new QualysAuth();
-    	auth.setQualysCredentials(apiServer, apiUserVal, apiPassVal);
+
+    	auth.setQualysCredentials(apiServer,AuthType.Basic, apiUserVal, apiPassVal,"","");
     	
     	 Pattern pattern = Pattern.compile("\\{env.(.*?)\\}");
 		 Matcher matcher = pattern.matcher(apiUserVal);
@@ -1443,7 +1445,8 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
                 }
     			
         		QualysAuth auth = new QualysAuth();
-            	auth.setQualysCredentials(apiServer, apiUser, apiPass);
+
+                auth.setQualysCredentials(apiServer,AuthType.Basic, apiUser, apiUser,"","");
             	if(useProxy) {
 	            	int proxyPortInt = Integer.parseInt(proxyPort);
 	            	auth.setProxyCredentials(proxyServer, proxyUsername, proxyPassword, proxyPortInt);
