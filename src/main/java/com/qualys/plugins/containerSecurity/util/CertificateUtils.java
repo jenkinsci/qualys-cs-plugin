@@ -27,7 +27,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.Nullable;
+import javax.annotation.Nullable;
 
 import static java.util.Objects.requireNonNull;
 

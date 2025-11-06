@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.qualys.plugins</groupId>
   <artifactId>qualys-cs</artifactId>
-  <version>1.7.0.3-SNAPSHOT</version>
+  <version>1.8.0.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <properties>
@@ -161,14 +161,14 @@
   <dependency>
 		<groupId>org.scala-sbt.ipcsocket</groupId>
 		<artifactId>ipcsocket</artifactId>
-		<version>1.0.0</version>
+      <version>1.6.3</version>
 	</dependency>
-	        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.70</version>
-        </dependency>
-<!--      <dependency>-->
+      <dependency>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcpkix-jdk15to18</artifactId>
+          <version>1.82</version>
+      </dependency>
+      <!--      <dependency>-->
 <!--          <groupId>io.grpc</groupId>-->
 <!--          <artifactId>grpc-netty</artifactId>-->
 <!--          <version>1.21.0</version>-->
