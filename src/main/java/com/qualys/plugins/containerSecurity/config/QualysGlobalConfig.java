@@ -3,12 +3,14 @@ package com.qualys.plugins.containerSecurity.config;
 import java.io.File;
 import java.util.*;
 
+import com.cloudbees.plugins.credentials.common.StandardCredentials;
 import com.qualys.plugins.common.QualysAuth.AuthType;
-import hudson.util.ListBoxModel.Option;
+import com.qualys.plugins.containerSecurity.util.OAuthCredential;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import hudson.security.ACL;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.AncestorInPath;
@@ -42,6 +44,9 @@ import org.apache.commons.lang.StringUtils;
 import com.qualys.plugins.common.QualysAuth.QualysAuth;
 import com.qualys.plugins.common.QualysClient.QualysCSClient;
 import com.qualys.plugins.common.QualysClient.QualysCSTestConnectionResponse;
+
+import static com.qualys.plugins.containerSecurity.util.Helper.buildMaskedLabel;
+import static com.qualys.plugins.containerSecurity.util.Helper.safe;
 
 
 @Extension
@@ -134,10 +139,23 @@ public class QualysGlobalConfig extends GlobalConfiguration {
             	return result.add(credentialsId);
             }
         }
-        return result
-                .withEmptySelection()
-                .withAll(CredentialsProvider.lookupCredentials(StandardUsernamePasswordCredentials.class, item, null, Collections.<DomainRequirement>emptyList()))
-                .withMatching(CredentialsMatchers.withId(credentialsId));
+        result.includeEmptyValue();
+        // Username/Password: show "username (desc)"
+        for (StandardUsernamePasswordCredentials c : CredentialsProvider.lookupCredentials(
+                StandardUsernamePasswordCredentials.class, item, ACL.SYSTEM, Collections.emptyList())) {
+            String label = buildMaskedLabel(c.getUsername(), "*****", c.getDescription(), c.getId());
+            result.add(label, c.getId());
+        }
+
+        // OAuth: show "clientId (desc)"
+        for (OAuthCredential c : CredentialsProvider.lookupCredentials(
+                OAuthCredential.class, item, ACL.SYSTEM, Collections.emptyList())) {
+            String clientId = safe(c.getClientId());
+            String label = buildMaskedLabel(clientId, "*****", c.getDescription(), c.getId());
+            result.add(label, c.getId());
+        }
+
+        return result.includeCurrentValue(credentialsId);
     }
     
     @POST
@@ -178,17 +196,28 @@ public class QualysGlobalConfig extends GlobalConfiguration {
         String apiPass = "";
         String proxyUsername = "";
 		String proxyPassword = "";
+        QualysAuth auth = new QualysAuth();
     	if (StringUtils.isNotEmpty(credentialsId)) {
-
-            StandardUsernamePasswordCredentials c = CredentialsMatchers.firstOrNull(CredentialsProvider.lookupCredentials(
-                            StandardUsernamePasswordCredentials.class,
+            StandardCredentials credentials = CredentialsMatchers.firstOrNull(CredentialsProvider.lookupCredentials(
+                            StandardCredentials.class,
                             item,
                             null,
                             Collections.<DomainRequirement>emptyList()),
                     CredentialsMatchers.withId(credentialsId));
-
-            apiUser = (c != null ? c.getUsername() : "");
-            apiPass = (c != null ? c.getPassword().getPlainText() : "");
+            if (credentials instanceof StandardUsernamePasswordCredentials) {
+                StandardUsernamePasswordCredentials userPass = (StandardUsernamePasswordCredentials) credentials;
+                apiUser = (userPass != null ? userPass.getUsername() : "");
+                apiPass = (userPass != null ? userPass.getPassword().getPlainText() : "");
+                auth.setQualysCredentials(apiServer,AuthType.Basic,apiUser,apiPass,"","");
+            } else if (credentials instanceof OAuthCredential) {
+                OAuthCredential oauth = (OAuthCredential) credentials;
+                String clientId = oauth.getClientId();
+                String clientSecret = oauth.getClientSecret();
+                auth.setQualysCredentials(apiServer, AuthType.OAuth,"","",clientId,clientSecret);
+            } else {
+                // handle unknown credential type
+                throw new IllegalArgumentException("Unsupported credential type: " + credentials.getClass());
+            }
         }
     	
     	if (StringUtils.isNotEmpty(proxyCredentialsId)) {
@@ -227,11 +256,8 @@ public class QualysGlobalConfig extends GlobalConfiguration {
 			}
 			if(!invalidFields.isEmpty())
 				return FormValidation.error("Invalid inputs for the following fields: " + String.join(", ", invalidFields));
-    			
-    		QualysAuth auth = new QualysAuth();
-        	auth.setQualysCredentials(apiServer, AuthType.Basic, apiUser, apiPass,"","");
 
-        	if(useProxy) {
+            if (useProxy) {
             	int proxyPortInt = Integer.parseInt(proxyPort);
             	auth.setProxyCredentials(proxyServer, proxyUsername, proxyPassword, proxyPortInt);
         	}
