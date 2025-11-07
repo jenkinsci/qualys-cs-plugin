@@ -5,18 +5,28 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.13</version>
+      <version>4.76</version>
     <relativePath />
   </parent>
   <groupId>com.qualys.plugins</groupId>
   <artifactId>qualys-cs</artifactId>
   <version>1.8.0.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-2.426.x</artifactId>
+                <version>2779.v391653d9c5da_</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
   <properties>
-    <jenkins.version>2.346.3</jenkins.version>
-    <java.version>1.8</java.version>
-    <java.level>8</java.level>
+      <jenkins.version>2.426.2</jenkins.version>
+      <java.version>11</java.version>
+      <java.level>11</java.level>
   </properties>
 
   <build>
@@ -62,8 +72,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+            <source>11</source>
+            <target>11</target>
         </configuration>
       </plugin>
       
@@ -136,16 +146,13 @@
     </pluginRepository>
   </pluginRepositories>
   <dependencies>
-  <dependency>
-    <groupId>org.jenkins-ci.plugins.workflow</groupId>
-    <artifactId>workflow-step-api</artifactId>
-      <version>639.v6eca_cd8c04a_a_</version>
-
-  </dependency>
+      <dependency>
+          <groupId>org.jenkins-ci.plugins.workflow</groupId>
+          <artifactId>workflow-step-api</artifactId>
+      </dependency>
   <dependency>
        <groupId>org.jenkins-ci.plugins</groupId>
        <artifactId>credentials</artifactId>
-       <version>2.6.1.1</version>
        <optional>true</optional>
    </dependency>
       <dependency>
@@ -167,6 +174,16 @@
           <groupId>org.bouncycastle</groupId>
           <artifactId>bcpkix-jdk15to18</artifactId>
           <version>1.82</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.httpcomponents.client5</groupId>
+          <artifactId>httpclient5</artifactId>
+          <version>5.2.1</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpmime</artifactId>
+          <version>4.5.14</version>
       </dependency>
       <!--      <dependency>-->
 <!--          <groupId>io.grpc</groupId>-->
@@ -242,13 +259,12 @@
 <!--      </dependency>-->
 </dependencies>
 
-<scm>
-	<connection>scm:git:ssh://github.com/jenkinsci/qualys-cs-plugin.git</connection>
-	<developerConnection>scm:git:ssh://git@github.com/jenkinsci/qualys-cs-plugin.git</developerConnection>
-	<url>https://github.com/jenkinsci/qualys-cs-plugin</url>
-    	<tag>HEAD</tag>
-</scm>
-	
+    <scm>
+        <connection>scm:git:https://github.com/jenkinsci/qualys-cs-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/qualys-cs-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/qualys-cs-plugin</url>
+        <tag>HEAD</tag>
+    </scm>
 <organization>
 	<name>Qualys Inc.</name>
 	<url>https://www.qualys.com/</url>
