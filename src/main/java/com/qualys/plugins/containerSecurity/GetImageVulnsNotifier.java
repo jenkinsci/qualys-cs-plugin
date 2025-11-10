@@ -7,7 +7,10 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import hudson.util.ListBoxModel.Option;
+
+import com.cloudbees.plugins.credentials.common.StandardCredentials;
+import com.qualys.plugins.common.QualysAuth.AuthType;
+import com.qualys.plugins.containerSecurity.util.OAuthCredential;
 
 import javax.annotation.Nonnull;
 
@@ -57,6 +60,10 @@ import qshaded.com.google.gson.JsonArray;
 import qshaded.com.google.gson.JsonElement;
 import qshaded.com.google.gson.JsonObject;
 import qshaded.com.google.gson.reflect.TypeToken;
+
+import static com.qualys.plugins.containerSecurity.util.Helper.buildMaskedLabel;
+import static com.qualys.plugins.containerSecurity.util.Helper.safe;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 @Extension
 public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
@@ -606,7 +613,7 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
               } catch (Exception e) {
              	 throw new AbortException(e.getMessage());
               }
-         }else if (StringUtils.isNotBlank(imageIdCSV)) {  //for freestyle, we may need to read from env var
+        } else if (isNotBlank(imageIdCSV)) {  //for freestyle, we may need to read from env var
         	 taskListener.getLogger().println("IMAGE_ID read from EnvVars is " + imageIdCSV);
      		String[] imageList = imageIdCSV.split(",");
      		try {
@@ -903,7 +910,7 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
 		 Set<String> imageSet = new LinkedHashSet<>(imageList);
 		 
 	     HashMap<String, String> uniqueImageIdList = processImages(imageSet, listener, launcher);
-	     
+        QualysAuth auth = new QualysAuth();
 		String apiUserVal = "";
     	String apiPassVal = "";
     	if(!StringUtils.isBlank(apiUser)) {
@@ -913,22 +920,30 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
     	else{
     		try {
         		logger.info("Using qualys API Server URL: " + apiServer);
-				StandardUsernamePasswordCredentials credential = CredentialsMatchers.firstOrNull(
+                StandardCredentials credentials = CredentialsMatchers.firstOrNull(
 						CredentialsProvider.lookupCredentials(
-								StandardUsernamePasswordCredentials.class,
+                                StandardCredentials.class,
 								project, ACL.SYSTEM,
 								URIRequirementBuilder.fromUri(apiServer).build()),
 						CredentialsMatchers.withId(credentialsId));
-				
-				if (credential != null) {
-					apiUserVal = credential.getUsername();
-					apiPassVal = credential.getPassword().getPlainText();
-					if(apiPassVal.trim().equals("") || apiUserVal.trim().equals("")) {
-						throw new Exception("Username and/or Password field is empty for credentials id: " + credentialsId);
-					}
-				}else {
+                if (credentials != null) {
+                    if (credentials instanceof StandardUsernamePasswordCredentials) {
+                        StandardUsernamePasswordCredentials userPass = (StandardUsernamePasswordCredentials) credentials;
+                        apiUserVal = userPass.getUsername();
+                        apiPassVal = userPass.getPassword().getPlainText();
+                        auth.setQualysCredentials(apiServer, AuthType.Basic, apiUserVal, apiPassVal,"","");
+                        if (apiPassVal.trim().equals("") || apiUserVal.trim().equals("")) {
+                            throw new Exception("Username and/or Password field is empty for credentials id: " + credentialsId);
+                        }
+                    } else if (credentials instanceof OAuthCredential) {
+                        OAuthCredential oauth = (OAuthCredential) credentials;
+                        String clientId = oauth.getClientId();
+                        String clientSecret = oauth.getClientSecret();
+                        auth.setQualysCredentials(apiServer,AuthType.OAuth,"","",clientId,clientSecret);
+                    } else
+                        throw new IllegalArgumentException("Unsupported credential type: " + credentials.getClass());
+                } else
 					throw new Exception("Could not read credentials for API login : credentials id: " + credentialsId);
-				}
 			}catch(Exception e){
 				e.printStackTrace();
 				//buildLogger.println("Invalid credentials! " + e.getMessage());
@@ -938,9 +953,7 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
     	String proxyUsernameVal = "";
 		String proxyPasswordVal = "";
     	//test connection first
-    	QualysAuth auth = new QualysAuth();
-    	auth.setQualysCredentials(apiServer, apiUserVal, apiPassVal);
-    	
+
     	 Pattern pattern = Pattern.compile("\\{env.(.*?)\\}");
 		 Matcher matcher = pattern.matcher(apiUserVal);
 		 if (matcher.find())
@@ -965,7 +978,7 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
 		 }
     	
     	if(useProxy) {
-    		if(StringUtils.isNotBlank(proxyUsername) && proxyPassword != null) {
+            if (isNotBlank(proxyUsername) && proxyPassword != null) {
     			proxyPasswordVal = proxyPassword.getPlainText();
     			proxyUsernameVal = proxyUsername;
     		}
@@ -1005,8 +1018,8 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
     private HashMap<String, String> processImages(Set<String> imageList, TaskListener listener, Launcher launcher) throws IOException, InterruptedException {
     	HashMap<String, String> finalImagesList = new HashMap<String, String>(); 
     	ArrayList<String> listOfImageIds = new ArrayList<String>();
-    	
-		listener.getLogger().println("Checking if Qualys CS sensor is running on same instance using: " + dockerUrl + (StringUtils.isNotBlank(dockerCert) ? " & docker Cert path : " + dockerCert + "." : "") );
+
+        listener.getLogger().println("Checking if Qualys CS sensor is running on same instance using: " + dockerUrl + (isNotBlank(dockerCert) ? " & docker Cert path : " + dockerCert + "." : ""));
 		//Check if sensor is running on same instance where images are built and docker daemon is shared
 		
 		VirtualChannel channel = launcher.getChannel();
@@ -1023,8 +1036,8 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
 		}else {
 			listener.getLogger().println("*** Qualys CS sensor is deployed in CICD mode ***");
 		}
-		
-		listener.getLogger().println("For Image tagging, using " + (Helper.isRuntimeDocker(dockerUrl) ? "docker url: " : "Nerdctl binary path" ) + dockerUrl + (StringUtils.isNotBlank(dockerCert) ? " & docker Cert path : " + dockerCert + "." : "") );
+
+        listener.getLogger().println("For Image tagging, using " + (Helper.isRuntimeDocker(dockerUrl) ? "docker url: " : "Nerdctl binary path") + dockerUrl + (isNotBlank(dockerCert) ? " & docker Cert path : " + dockerCert + "." : ""));
 		
 		Instant instant = Instant.now();
 		taggingTime = instant.getEpochSecond();
@@ -1349,8 +1362,6 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
         				Integer.parseInt(qid);
         			}
         		}
-        	} catch (RuntimeException e) {
-        		return FormValidation.error("Enter valid QID range/numbers");
         	} catch(Exception e) {
         		return FormValidation.error("Enter valid QID range/numbers");
         	}
@@ -1416,20 +1427,34 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
     			}
     			if(!invalidFields.isEmpty())
     				return FormValidation.error("Invalid inputs for the following fields: " + String.join(", ", invalidFields));
-        		
+
+                QualysAuth auth = new QualysAuth();
+
     			if (StringUtils.isNotEmpty(credentialsId)) {
-                    StandardUsernamePasswordCredentials c = CredentialsMatchers.firstOrNull(CredentialsProvider.lookupCredentials(
-                                    StandardUsernamePasswordCredentials.class,
+                    StandardCredentials credentials = CredentialsMatchers.firstOrNull(CredentialsProvider.lookupCredentials(
+                                    StandardCredentials.class,
                                     item,
                                     null,
                                     Collections.<DomainRequirement>emptyList()),
                             CredentialsMatchers.withId(credentialsId));
-
-                    apiUser = (c != null ? c.getUsername() : "");
-                    apiPass = (c != null ? c.getPassword().getPlainText() : "");
+                    if (credentials instanceof StandardUsernamePasswordCredentials) {
+                        StandardUsernamePasswordCredentials userPass = (StandardUsernamePasswordCredentials) credentials;
+                        apiUser = (userPass != null ? userPass.getUsername() : "");
+                        apiPass = (userPass != null ? userPass.getPassword().getPlainText() : "");
+                        auth.setQualysCredentials(apiServer, AuthType.Basic, apiUser, apiPass,"","");
+                    } else if (credentials instanceof OAuthCredential) {
+                        OAuthCredential oauth = (OAuthCredential) credentials;
+                        String clientId = oauth.getClientId();
+                        String clientSecret = oauth.getClientSecret();
+                        auth.setQualysCredentials(apiServer,AuthType.OAuth,"","",clientId,clientSecret);
+                    } else {
+                        // handle unknown credential type
+                        throw new IllegalArgumentException("Unsupported credential type: " + credentials.getClass());
+                    }
                 }
-            	
-        		if (StringUtils.isNotEmpty(proxyCredentialsId)) {
+
+
+                if (StringUtils.isNotEmpty(proxyCredentialsId)) {
 
                     StandardUsernamePasswordCredentials c = CredentialsMatchers.firstOrNull(CredentialsProvider.lookupCredentials(
                                     StandardUsernamePasswordCredentials.class,
@@ -1441,10 +1466,9 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
                     proxyUsername = (c != null ? c.getUsername() : "");
                     proxyPassword = (c != null ? c.getPassword().getPlainText() : "");
                 }
-    			
-        		QualysAuth auth = new QualysAuth();
-            	auth.setQualysCredentials(apiServer, apiUser, apiPass);
-            	if(useProxy) {
+
+
+                if(useProxy) {
 	            	int proxyPortInt = Integer.parseInt(proxyPort);
 	            	auth.setProxyCredentials(proxyServer, proxyUsername, proxyPassword, proxyPortInt);
             	}
@@ -1476,10 +1500,24 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
                 	return result.add(credentialsId);
                 }
             }
-            return result
-                    .withEmptySelection()
-                    .withAll(CredentialsProvider.lookupCredentials(StandardUsernamePasswordCredentials.class, item, null, Collections.<DomainRequirement>emptyList()))
-                    .withMatching(CredentialsMatchers.withId(credentialsId));
+
+            result.includeEmptyValue();
+            // Username/Password: show "username (desc)"
+            for (StandardUsernamePasswordCredentials c : CredentialsProvider.lookupCredentials(
+                    StandardUsernamePasswordCredentials.class, item, ACL.SYSTEM, Collections.emptyList())) {
+                String label = buildMaskedLabel(c.getUsername(), "*****", c.getDescription(), c.getId());
+                result.add(label, c.getId());
+            }
+
+            // OAuth: show "clientId (desc)"
+            for (OAuthCredential c : CredentialsProvider.lookupCredentials(
+                    OAuthCredential.class, item, ACL.SYSTEM, Collections.emptyList())) {
+                String clientId = safe(c.getClientId());
+                String label = buildMaskedLabel(clientId, "*****", c.getDescription(), c.getId());
+                result.add(label, c.getId());
+            }
+
+            return result.includeCurrentValue(credentialsId);
         }
         
         @POST
