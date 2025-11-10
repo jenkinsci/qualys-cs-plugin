@@ -196,4 +196,17 @@ public class Helper{
         	}
         }
     }
+
+    public static String buildMaskedLabel(String idPart, String maskedSecret, String description, String id) {
+        String base = (idPart != null && !idPart.trim().isEmpty()) ? idPart.trim() : "";
+        String label = base.isEmpty() ? maskedSecret : (base + "/" + maskedSecret);
+        if (description != null && !description.trim().isEmpty()) {
+            label += " (" + description.trim() + ")";
+        }
+        return label;
+    }
+
+    public static String safe(String s) {
+        return s == null ? "" : s;
+    }
 }

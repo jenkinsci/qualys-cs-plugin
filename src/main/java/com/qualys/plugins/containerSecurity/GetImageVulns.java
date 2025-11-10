@@ -85,7 +85,7 @@ public class GetImageVulns {
 	    		retryCount++;
 	    		
 	    		//JP-210 retry 3 times after 5 sec delay to test connection
-	    		if(resp.success == true && resp.responseCode == 201) {
+	    		if(resp.success == true && (resp.responseCode == 201||resp.responseCode==200)) {
 		   			buildLogger.println("Test connection successful.");
 	    			logger.info("Test connection successful. Response code: " + resp.responseCode);
 	    			break;
