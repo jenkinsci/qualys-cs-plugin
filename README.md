@@ -24,7 +24,23 @@ The sensor uploads all the data for configured image to the Qualys platform. Qua
 We recommend using this plugin step during "Post-build" phase of your job, right after you build a container image. 
 
 ### Configuration
+Before the Job configuration, make sure to configure the docker socket/containerd binary path for the plugin to be able to tag the image.
+To configure the following fields, navigate to 'Qualys Container Security' section in the path as -> {Jenkins-Instance- 
+url}/manage/configure > Qualys Container Security > Advanced Settings.
+ * Docker URL/Nerdctl binary path: Configure this field as per your runtime environment.
+    For dockerd, the expected configuration is docker socket path eg.
+    unix://path_of_docker.sock or tcp://[host]:[port], in case of TLS, cert path should be provided in field 'Cert file path'
+ * For containerd, the expected configuration is nerdctl binary path. eg. /var/nerdctl _binary
+   As nerdctl binary is required for the plugin to complete its activities, it is advised to make it accessible for plugin by mapping the nerdctl binary path as well as the 
+   containerd.sock file path in Jenkins deployment.yaml's volumeMounts section.
+   Please refer the below sample :
+   
+   <img width="393" alt="image" src="https://github.com/jenkinsci/qualys-cs-plugin/assets/143092348/bf609084-9ba3-4420-a4d1-9435fe129b0c">
+   
+ * Cert File Path (optional): If you are using remote server enabled https, you can provide a specific folder location which contains the files ca.pem, cert.pem and 
+   key.pem. For example, /var/jenkins_home/certs
 
+## For Job Configuration
 If you are using pipeline, you should go to "Pipeline Syntax", and select `getImageVulnsFromQualys` step.
 If you are using freestyle, you should add `Scan container images with Qualys CS` build step.
 
@@ -58,3 +74,11 @@ You can also exclude some conditions - You can configure a comma separated list 
 ### Generate Pipeline Script *(for pipeline project only)*
 
 If you are configuring pipeline project, click the `Generate Pipeline Script` button. It will give you a command which you can copy and paste in your project's pipeline script. 
+
+## Release Notes for v1.7.x
+ * Users can now provide the Docker URL/Nerdctl path from the Job level configuration also.
+ * Minor log changes.
+ * For detailed information on upgrading of Qualys Container Scanning Connector to the 1.7.x version, please visit [user guide](https://www.qualys.com/docs/qualys-container-scanning-connector-jenkins-plugin-user-guide.pdf)
+
+## Known Issues in v1.7.0.2
+ * Multiple checkboxes for Job Specific Configuration and Global level configuration could get selected at a time for jenkins latest version 2.426.X. To avoid this discrepancy please hard refresh and re select one of the checkbox.

@@ -132,7 +132,7 @@ public class ContainerdNerdctlClientHelper {
         String command = EXPORT_PATH_CMD + this.nerdctlBinaryPath + ";" + NERDCTL_VERSION_CMD;
         String versionInfo = this.executeCommand(command);
         if (!versionInfo.toLowerCase().contains("version"))
-            throw new AbortException("Crictl Binary path is not set properly.");
+            throw new AbortException("Nerdctl Binary path is not set properly.");
     }
 
     private String executeCommand(String command) {
