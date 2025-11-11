@@ -1,0 +1,45 @@
+{
+  "configId": {
+    "id": "2c3e7918-193c-4ba6-bcc8-08a974362785"
+  },
+  "scanType": {
+    "type": 4,
+    "name": "Black Duck SCA",
+    "description": "Scans open source components for known vulnerabilities, and policy violations."
+  },
+  "blackDuckConfig": {
+    "installationLocation": {
+      "source": {
+        "type": 8
+      }
+    },
+    "additionalArguments": {
+      "source": {
+        "type": 8
+      }
+    },
+    "configFilePath": {
+      "source": {
+        "type": 8
+      }
+    },
+    "searchDepth": {
+      "source": {
+        "type": 8
+      }
+    }
+  },
+  "bridgeConfig": {},
+  "buildConfig": {},
+  "workingDirectory": {
+    "value": "C:/Integrations/plugins/jenkins_cs_plugin",
+    "source": {
+      "type": 8
+    }
+  },
+  "path": {
+    "source": {
+      "type": 8
+    }
+  }
+}
