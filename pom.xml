@@ -108,11 +108,11 @@
          </execution>
        </executions>
      </plugin>
-     
-      <plugin>
+        <!--       added version for animal-sniffer-maven-plugin-->
+        <plugin>
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>animal-sniffer-maven-plugin</artifactId>
-	  <version>1.26</version>
+          <version>1.26</version>
       <configuration>
         <skip>true</skip>
       </configuration>
