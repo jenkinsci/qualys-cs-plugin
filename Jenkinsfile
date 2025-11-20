@@ -1,5 +1,5 @@
 buildPlugin(
-    jdk: 11,
+    jdkVersions: [11],
     skipTests: true,
     spotbugs: [
         qualityGates: [
@@ -11,4 +11,3 @@ buildPlugin(
         ]
     ]
 )
-
