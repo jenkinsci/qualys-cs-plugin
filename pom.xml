@@ -134,7 +134,7 @@
       <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
 	<repository>
-    	<id>local</id>
+        <id>local-files</id>
     	<name>Local Repository (artefact in project source code)</name>
     	<url>file://${project.basedir}/lib</url>
 	</repository>
