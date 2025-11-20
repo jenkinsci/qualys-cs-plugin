@@ -5,12 +5,4 @@
 	<entry key="SCAN_STATUS_API_PATH_FORMAT"><![CDATA[/v1.0/customer/%s/user/%s/containers/count]]></entry>
 	<entry key="GET_SCAN_RESULT_API_PATH_FORMAT"><![CDATA[/csapi/v1.0/images/%s]]></entry>
 
-
-    <!-- BlackDuck integration properties -->
-    <entry key="is-blackduck-enabled">true</entry>
-    <entry key="blackduck-project-name">apiintegration_jenkins_cs_plugin</entry>
-    <entry key="blackduck-artifacts-to-scan">/</entry>
-    
-    <entry key="is-coverity-enabled">true</entry>
-    <entry key="cov-project-name">true</entry>
 </properties>

@@ -1,4 +1,4 @@
-//package com.qualys.plugins.containerSecurity.util;
+package com.qualys.plugins.containerSecurity.util;//package com.qualys.plugins.containerSecurity.util;
 //
 //import hudson.AbortException;
 //import qshaded.com.google.gson.JsonArray;
