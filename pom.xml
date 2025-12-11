@@ -1,265 +1,284 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.jenkins-ci.plugins</groupId>
-    <artifactId>plugin</artifactId>
-    <version>4.13</version>
-    <relativePath />
-  </parent>
-  <groupId>com.qualys.plugins</groupId>
-  <artifactId>qualys-cs</artifactId>
-  <version>1.7.0.4-SNAPSHOT</version>
-  <packaging>hpi</packaging>
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>4.76</version>
+        <relativePath />
+    </parent>
+    <groupId>com.qualys.plugins</groupId>
+    <artifactId>qualys-cs</artifactId>
+    <version>1.8.0.0-SNAPSHOT</version>
+    <packaging>hpi</packaging>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-2.426.x</artifactId>
+                <version>2779.v391653d9c5da_</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <properties>
+        <jenkins.version>2.426.2</jenkins.version>
+        <java.version>11</java.version>
+        <java.level>11</java.level>
+    </properties>
 
-  <properties>
-    <jenkins.version>2.346.3</jenkins.version>
-    <java.version>1.8</java.version>
-    <java.level>8</java.level>
-  </properties>
+    <build>
+        <!--      <extensions>-->
+        <!--          <extension>-->
+        <!--              <groupId>kr.motd.maven</groupId>-->
+        <!--              <artifactId>os-maven-plugin</artifactId>-->
+        <!--              <version>1.5.0.Final</version>-->
+        <!--          </extension>-->
+        <!--      </extensions>-->
 
-  <build>
-<!--      <extensions>-->
-<!--          <extension>-->
-<!--              <groupId>kr.motd.maven</groupId>-->
-<!--              <artifactId>os-maven-plugin</artifactId>-->
-<!--              <version>1.5.0.Final</version>-->
-<!--          </extension>-->
-<!--      </extensions>-->
+        <finalName>${project.artifactId}_${project.version}</finalName>
+        <plugins>
 
-    <finalName>${project.artifactId}_${project.version}</finalName>
-    <plugins>
+            <!--        <plugin>-->
+            <!--            <groupId>org.xolstice.maven.plugins</groupId>-->
+            <!--            <artifactId>protobuf-maven-plugin</artifactId>-->
+            <!--            <version>0.5.1</version>-->
+            <!--            <configuration>-->
+            <!--                <protocArtifact>com.google.protobuf:protoc:3.7.1:exe:${os.detected.classifier}</protocArtifact>-->
+            <!--                <pluginId>grpc-java</pluginId>-->
+            <!--                <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.21.0:exe:${os.detected.classifier}</pluginArtifact>-->
+            <!--                <protoSourceRoot>src/main/proto</protoSourceRoot>-->
+            <!--                <includes>-->
+            <!--                    <include>github.com/containerd/containerd/api/services/images/v1/*.proto</include>-->
+            <!--                    <include>github.com/containerd/containerd/api/services/containers/v1/*.proto</include>-->
+            <!--                    <include>github.com/containerd/containerd/api/types/*.proto</include>-->
+            <!--                    <include>github.com/containerd/containerd/vendor/k8s.io/cri-api/pkg/apis/runtime/v1/*.proto</include>-->
+            <!--                    <include>protobuf/gogoproto/*.proto</include>-->
+            <!--                </includes>-->
+            <!--            </configuration>-->
+            <!--            <executions>-->
+            <!--                <execution>-->
+            <!--                    <goals>-->
+            <!--                        <goal>compile</goal>-->
+            <!--                        <goal>compile-custom</goal>-->
+            <!--                    </goals>-->
+            <!--                </execution>-->
+            <!--            </executions>-->
+            <!--        </plugin>-->
 
-<!--        <plugin>-->
-<!--            <groupId>org.xolstice.maven.plugins</groupId>-->
-<!--            <artifactId>protobuf-maven-plugin</artifactId>-->
-<!--            <version>0.5.1</version>-->
-<!--            <configuration>-->
-<!--                <protocArtifact>com.google.protobuf:protoc:3.7.1:exe:${os.detected.classifier}</protocArtifact>-->
-<!--                <pluginId>grpc-java</pluginId>-->
-<!--                <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.21.0:exe:${os.detected.classifier}</pluginArtifact>-->
-<!--                <protoSourceRoot>src/main/proto</protoSourceRoot>-->
-<!--                <includes>-->
-<!--                    <include>github.com/containerd/containerd/api/services/images/v1/*.proto</include>-->
-<!--                    <include>github.com/containerd/containerd/api/services/containers/v1/*.proto</include>-->
-<!--                    <include>github.com/containerd/containerd/api/types/*.proto</include>-->
-<!--                    <include>github.com/containerd/containerd/vendor/k8s.io/cri-api/pkg/apis/runtime/v1/*.proto</include>-->
-<!--                    <include>protobuf/gogoproto/*.proto</include>-->
-<!--                </includes>-->
-<!--            </configuration>-->
-<!--            <executions>-->
-<!--                <execution>-->
-<!--                    <goals>-->
-<!--                        <goal>compile</goal>-->
-<!--                        <goal>compile-custom</goal>-->
-<!--                    </goals>-->
-<!--                </execution>-->
-<!--            </executions>-->
-<!--        </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-      
-	<plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>findbugs-maven-plugin</artifactId>
-          <version>3.0.4</version>
-          <configuration>
-            <failOnError>${maven.findbugs.failure.strict}</failOnError>
-          </configuration>
-        </plugin>
-	    
-	 <plugin>
-	     <groupId>com.github.spotbugs</groupId>
-	     <artifactId>spotbugs-maven-plugin</artifactId>
-	     <version>4.1.4</version>
-	     <configuration>
-	         <effort>Max</effort>
-	         <threshold>Low</threshold>
-	         <xmlOutput>true</xmlOutput>
-	     </configuration>
-       <executions>
-         <execution>
-           <goals>
-             <goal>check</goal>
-           </goals>
-         </execution>
-       </executions>
-     </plugin>
-     
-      <plugin>
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>animal-sniffer-maven-plugin</artifactId>
-      <configuration>
-        <skip>true</skip>
-      </configuration>
-    </plugin>  
-    </plugins>
-  </build>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>3.0.4</version>
+                <configuration>
+                    <failOnError>${maven.findbugs.failure.strict}</failOnError>
+                </configuration>
+            </plugin>
 
-  <name>Qualys Container Scanning Connector</name>
-  <description>The Qualys Container Scanning Connector empowers you to assess the container images built in your existing CI/CD processes for vulnerabilities.</description>
-  <url>https://github.com/jenkinsci/qualys-cs-plugin</url>
-  
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.1.4</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Low</threshold>
+                    <xmlOutput>true</xmlOutput>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-  <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-  <licenses>
-    <license>
-      <name>MIT License</name>
-      <url>http://opensource.org/licenses/MIT</url>
-    </license>
-  </licenses>
+    <name>Qualys Container Scanning Connector</name>
+    <description>The Qualys Container Scanning Connector empowers you to assess the container images built in your existing CI/CD processes for vulnerabilities.</description>
+    <url>https://github.com/jenkinsci/qualys-cs-plugin</url>
 
-  <repositories>
-    <repository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
-    </repository>
-	<repository>
-    	<id>local</id>
-    	<name>Local Repository (artefact in project source code)</name>
-    	<url>file://${project.basedir}/lib</url>
-	</repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-  </pluginRepositories>
-  <dependencies>
-  <dependency>
-    <groupId>org.jenkins-ci.plugins.workflow</groupId>
-    <artifactId>workflow-step-api</artifactId>
-      <version>639.v6eca_cd8c04a_a_</version>
 
-  </dependency>
-  <dependency>
-       <groupId>org.jenkins-ci.plugins</groupId>
-       <artifactId>credentials</artifactId>
-       <version>2.6.1.1</version>
-       <optional>true</optional>
-   </dependency>
-      <dependency>
-          <groupId>io.jenkins.plugins</groupId>
-          <artifactId>jnr-posix-api</artifactId>
-          <version>3.1.7-1</version>
-      </dependency>
-      <dependency>
-		<groupId>com.qualys</groupId>
-        <artifactId>cs-plugin-common</artifactId>
-        <version>1.2.6</version>
-	</dependency>
-  <dependency>
-		<groupId>org.scala-sbt.ipcsocket</groupId>
-		<artifactId>ipcsocket</artifactId>
-		<version>1.0.0</version>
-	</dependency>
-	        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.70</version>
+    <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </repository>
+        <repository>
+            <id>local-files</id>
+            <name>Local Repository (artefact in project source code)</name>
+            <url>file://${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+    <dependencies>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-step-api</artifactId>
+            <version>639.v6eca_cd8c04a_a_</version>
+
         </dependency>
-<!--      <dependency>-->
-<!--          <groupId>io.grpc</groupId>-->
-<!--          <artifactId>grpc-netty</artifactId>-->
-<!--          <version>1.21.0</version>-->
-<!--          <exclusions>-->
-<!--              <exclusion>-->
-<!--                  <groupId>io.netty</groupId>-->
-<!--                  <artifactId>netty-handler-proxy</artifactId>-->
-<!--              </exclusion>-->
-<!--          </exclusions>-->
-<!--      </dependency>-->
-<!--      <dependency>-->
-<!--          <groupId>io.grpc</groupId>-->
-<!--          <artifactId>grpc-protobuf</artifactId>-->
-<!--          <version>1.21.0</version>-->
-<!--      </dependency>-->
-<!--      <dependency>-->
-<!--          <groupId>io.grpc</groupId>-->
-<!--          <artifactId>grpc-stub</artifactId>-->
-<!--          <version>1.21.0</version>-->
-<!--      </dependency>-->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>credentials</artifactId>
+            <version>2.6.1.1</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>jnr-posix-api</artifactId>
+            <version>3.1.7-1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.qualys</groupId>
+            <artifactId>cs-plugin-common</artifactId>
+            <version>1.2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-sbt.ipcsocket</groupId>
+            <artifactId>ipcsocket</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15to18</artifactId>
+            <version>1.82</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+        <!--      <dependency>-->
+        <!--          <groupId>io.grpc</groupId>-->
+        <!--          <artifactId>grpc-netty</artifactId>-->
+        <!--          <version>1.21.0</version>-->
+        <!--          <exclusions>-->
+        <!--              <exclusion>-->
+        <!--                  <groupId>io.netty</groupId>-->
+        <!--                  <artifactId>netty-handler-proxy</artifactId>-->
+        <!--              </exclusion>-->
+        <!--          </exclusions>-->
+        <!--      </dependency>-->
+        <!--      <dependency>-->
+        <!--          <groupId>io.grpc</groupId>-->
+        <!--          <artifactId>grpc-protobuf</artifactId>-->
+        <!--          <version>1.21.0</version>-->
+        <!--      </dependency>-->
+        <!--      <dependency>-->
+        <!--          <groupId>io.grpc</groupId>-->
+        <!--          <artifactId>grpc-stub</artifactId>-->
+        <!--          <version>1.21.0</version>-->
+        <!--      </dependency>-->
 
-<!--      <dependency>-->
-<!--          <groupId>io.netty</groupId>-->
-<!--          <artifactId>netty-transport-native-epoll</artifactId>-->
-<!--          <version>4.1.94.Final</version>-->
-<!--          <classifier>linux-x86_64</classifier>-->
-<!--          <scope>runtime</scope>-->
-<!--          <exclusions>-->
-<!--              <exclusion>-->
-<!--                  <groupId>io.netty</groupId>-->
-<!--                  <artifactId>netty-common</artifactId>-->
-<!--              </exclusion>-->
-<!--              <exclusion>-->
-<!--                  <groupId>io.netty</groupId>-->
-<!--                  <artifactId>netty-buffer</artifactId>-->
-<!--              </exclusion>-->
-<!--              <exclusion>-->
-<!--                  <groupId>io.netty</groupId>-->
-<!--                  <artifactId>netty-transport</artifactId>-->
-<!--              </exclusion>-->
-<!--              <exclusion>-->
-<!--                  <groupId>io.netty</groupId>-->
-<!--                  <artifactId>netty-transport-native-unix-common</artifactId>-->
-<!--              </exclusion>-->
-<!--              <exclusion>-->
-<!--                  <groupId>io.netty</groupId>-->
-<!--                  <artifactId>netty-transport-classes-epoll</artifactId>-->
-<!--              </exclusion>-->
-<!--              <exclusion>-->
-<!--                  <groupId>org.bouncycastle</groupId>-->
-<!--                  <artifactId>bcpkix-jdk15on</artifactId>-->
-<!--              </exclusion>-->
-<!--          </exclusions>-->
-<!--          <optional>false</optional>-->
-<!--      </dependency>-->
+        <!--      <dependency>-->
+        <!--          <groupId>io.netty</groupId>-->
+        <!--          <artifactId>netty-transport-native-epoll</artifactId>-->
+        <!--          <version>4.1.94.Final</version>-->
+        <!--          <classifier>linux-x86_64</classifier>-->
+        <!--          <scope>runtime</scope>-->
+        <!--          <exclusions>-->
+        <!--              <exclusion>-->
+        <!--                  <groupId>io.netty</groupId>-->
+        <!--                  <artifactId>netty-common</artifactId>-->
+        <!--              </exclusion>-->
+        <!--              <exclusion>-->
+        <!--                  <groupId>io.netty</groupId>-->
+        <!--                  <artifactId>netty-buffer</artifactId>-->
+        <!--              </exclusion>-->
+        <!--              <exclusion>-->
+        <!--                  <groupId>io.netty</groupId>-->
+        <!--                  <artifactId>netty-transport</artifactId>-->
+        <!--              </exclusion>-->
+        <!--              <exclusion>-->
+        <!--                  <groupId>io.netty</groupId>-->
+        <!--                  <artifactId>netty-transport-native-unix-common</artifactId>-->
+        <!--              </exclusion>-->
+        <!--              <exclusion>-->
+        <!--                  <groupId>io.netty</groupId>-->
+        <!--                  <artifactId>netty-transport-classes-epoll</artifactId>-->
+        <!--              </exclusion>-->
+        <!--              <exclusion>-->
+        <!--                  <groupId>org.bouncycastle</groupId>-->
+        <!--                  <artifactId>bcpkix-jdk15on</artifactId>-->
+        <!--              </exclusion>-->
+        <!--          </exclusions>-->
+        <!--          <optional>false</optional>-->
+        <!--      </dependency>-->
 
-<!--      <dependency>-->
-<!--          <groupId>io.netty</groupId>-->
-<!--          <artifactId>netty-all</artifactId>-->
-<!--          <version>4.1.94.Final</version>-->
-<!--          <exclusions>-->
-<!--              <exclusion>-->
-<!--                  <groupId>io.netty</groupId>-->
-<!--                  <artifactId>netty-transport-native-kqueue</artifactId>-->
-<!--              </exclusion>-->
-<!--              <exclusion>-->
-<!--                  <groupId>io.netty</groupId>-->
-<!--                  <artifactId>netty-transport-native-epoll</artifactId>-->
-<!--              </exclusion>-->
-<!--          </exclusions>-->
-<!--      </dependency>-->
-</dependencies>
+        <!--      <dependency>-->
+        <!--          <groupId>io.netty</groupId>-->
+        <!--          <artifactId>netty-all</artifactId>-->
+        <!--          <version>4.1.94.Final</version>-->
+        <!--          <exclusions>-->
+        <!--              <exclusion>-->
+        <!--                  <groupId>io.netty</groupId>-->
+        <!--                  <artifactId>netty-transport-native-kqueue</artifactId>-->
+        <!--              </exclusion>-->
+        <!--              <exclusion>-->
+        <!--                  <groupId>io.netty</groupId>-->
+        <!--                  <artifactId>netty-transport-native-epoll</artifactId>-->
+        <!--              </exclusion>-->
+        <!--          </exclusions>-->
+        <!--      </dependency>-->
+    </dependencies>
 
-<scm>
-	<connection>scm:git:ssh://github.com/jenkinsci/qualys-cs-plugin.git</connection>
-	<developerConnection>scm:git:ssh://git@github.com/jenkinsci/qualys-cs-plugin.git</developerConnection>
-	<url>https://github.com/jenkinsci/qualys-cs-plugin</url>
-    	<tag>HEAD</tag>
-</scm>
-	
-<organization>
-	<name>Qualys Inc.</name>
-	<url>https://www.qualys.com/</url>
-</organization>
+    <scm>
+        <connection>scm:git:https://github.com/jenkinsci/qualys-cs-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/qualys-cs-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/qualys-cs-plugin</url>
+        <tag>HEAD</tag>
+    </scm>
+    <organization>
+        <name>Qualys Inc.</name>
+        <url>https://www.qualys.com/</url>
+    </organization>
 
-<developers>
-	<developer>
-		<id>Qualys</id>
-		<name>Qualys Inc.</name>
-		<email>plugins@qualys.com</email>
-	</developer>
-</developers>
+    <developers>
+        <developer>
+            <id>Qualys</id>
+            <name>Qualys Inc.</name>
+            <email>plugins@qualys.com</email>
+        </developer>
+    </developers>
 
 </project>

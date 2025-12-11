@@ -85,7 +85,7 @@ public class GetImageVulns {
 	    		retryCount++;
 	    		
 	    		//JP-210 retry 3 times after 5 sec delay to test connection
-	    		if(resp.success == true && resp.responseCode == 201) {
+	    		if(resp.success == true && (resp.responseCode == 201||resp.responseCode==200)) {
 		   			buildLogger.println("Test connection successful.");
 	    			logger.info("Test connection successful. Response code: " + resp.responseCode);
 	    			break;
@@ -131,7 +131,7 @@ public class GetImageVulns {
         JsonObject imageSHA = new JsonObject();
         boolean hasAtleastOneResult = false;
         List<String> otherExceptions = new ArrayList<String>();
-        for(Map.Entry<String, String> entry : imageList.entrySet()) {
+        for(Entry<String, String> entry : imageList.entrySet()) {
         	String imageSha = entry.getKey();
         	String imageID = imageSha.substring(0, 12);
         	String response = null;
@@ -222,7 +222,7 @@ public class GetImageVulns {
         
         //create report links
         try {
-        	for(Map.Entry<String, String> entry : imageList.entrySet()) {
+        	for(Entry<String, String> entry : imageList.entrySet()) {
         		String imageSha = entry.getKey();
             	String imageID = imageSha.substring(0, 12);
             	String originalImageStr = entry.getValue();

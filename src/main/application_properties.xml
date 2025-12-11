@@ -4,4 +4,5 @@
 	<entry key="GET_IMAGE_LIST_API_PATH_FORMAT"><![CDATA[/v1.0/customer/%s/user/%s/images?filter=imageId%%3A%s&pageNumber=0&pageSize=1000]]></entry>
 	<entry key="SCAN_STATUS_API_PATH_FORMAT"><![CDATA[/v1.0/customer/%s/user/%s/containers/count]]></entry>
 	<entry key="GET_SCAN_RESULT_API_PATH_FORMAT"><![CDATA[/csapi/v1.0/images/%s]]></entry>
+
 </properties>
