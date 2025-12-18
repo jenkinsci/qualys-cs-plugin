@@ -82,3 +82,7 @@ If you are configuring pipeline project, click the `Generate Pipeline Script` bu
 
 ## Known Issues in v1.7.0.2
  * Multiple checkboxes for Job Specific Configuration and Global level configuration could get selected at a time for jenkins latest version 2.426.X. To avoid this discrepancy please hard refresh and re select one of the checkbox.
+
+## Release notes for 1.8.0.0
+ * Added OAuth support(Authentication using client id and client secret)
+ * Added support for KSA pod.
