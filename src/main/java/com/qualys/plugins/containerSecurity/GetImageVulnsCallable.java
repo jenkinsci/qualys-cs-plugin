@@ -11,15 +11,17 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import com.qualys.plugins.common.QualysAuth.QualysAuth;
-import com.qualys.plugins.common.QualysClient.QualysCSClient;
-import com.qualys.plugins.common.QualysClient.QualysCSResponse;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.qualys.plugins.containerSecurity.common.QualysAuth.QualysAuth;
+import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSClient;
+import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSResponse;
 import com.qualys.plugins.containerSecurity.util.Helper;
 
 import hudson.AbortException;
 import hudson.model.TaskListener;
-import qshaded.com.google.gson.JsonElement;
-import qshaded.com.google.gson.JsonObject;
+
 
 public class GetImageVulnsCallable implements Callable<String> {
   
@@ -31,7 +33,7 @@ public class GetImageVulnsCallable implements Callable<String> {
     public Set<String> reposArray;
     private String buildDirPath;
     private boolean isFailConditionsConfigured;
-    private QualysCSClient qualysClient; 
+    private QualysCSClient qualysClient;
     private long taggingTime;
     
     private final static Logger logger = Logger.getLogger(GetImageVulnsCallable.class.getName());

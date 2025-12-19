@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import com.google.gson.*;
 import hudson.AbortException;
 
 import java.io.BufferedReader;
@@ -42,11 +43,6 @@ import org.scalasbt.ipcsocket.UnixDomainSocket;
 
 import com.qualys.plugins.containerSecurity.httpClient.LocalDirectorySSLConfig;
 
-import qshaded.com.google.gson.Gson;
-import qshaded.com.google.gson.JsonArray;
-import qshaded.com.google.gson.JsonElement;
-import qshaded.com.google.gson.JsonObject;
-import qshaded.com.google.gson.JsonParser;
 
 public class DockerClientHelper {
 	private final static Logger logger = Logger.getLogger(Helper.class.getName());
