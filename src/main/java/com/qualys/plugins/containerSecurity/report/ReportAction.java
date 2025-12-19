@@ -6,14 +6,14 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
-import qshaded.com.google.gson.Gson;
-import qshaded.com.google.gson.JsonArray;
-import qshaded.com.google.gson.JsonElement;
-import qshaded.com.google.gson.JsonObject;
-import qshaded.com.google.gson.reflect.TypeToken;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.Run;
@@ -117,7 +117,7 @@ public class ReportAction implements Action {
 	        }
         }
     	if(prevRunSummary != null && !prevRunSummary.isJsonNull() && rposArr != null)  {
-	    	Type listType = TypeToken.getParameterized(List.class, String.class).getType(); 
+	    	Type listType = TypeToken.getParameterized(List.class, String.class).getType();
 	    	List<String> currRepos = gson.fromJson(rposArr.toString(), listType);
 	    	//compare repos to get matched vulnscount
 	    	for(JsonElement el: prevRunSummary) {

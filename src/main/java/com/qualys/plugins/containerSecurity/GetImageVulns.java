@@ -14,12 +14,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.qualys.plugins.containerSecurity.common.QualysAuth.QualysAuth;
+import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSClient;
+import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSTestConnectionResponse;
+import com.qualys.plugins.containerSecurity.common.QualysCriteria.QualysCriteria;
 import org.apache.commons.lang.StringUtils;
 
-import com.qualys.plugins.common.QualysAuth.QualysAuth;
-import com.qualys.plugins.common.QualysClient.QualysCSClient;
-import com.qualys.plugins.common.QualysClient.QualysCSTestConnectionResponse;
-import com.qualys.plugins.common.QualysCriteria.QualysCriteria;
+
 import com.qualys.plugins.containerSecurity.model.ProxyConfiguration;
 import com.qualys.plugins.containerSecurity.report.ReportAction;
 import com.qualys.plugins.containerSecurity.util.Helper;
@@ -29,10 +34,7 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import qshaded.com.google.gson.Gson;
-import qshaded.com.google.gson.JsonArray;
-import qshaded.com.google.gson.JsonElement;
-import qshaded.com.google.gson.JsonObject;
+
 
 public class GetImageVulns {
     private Run<?, ?> run;

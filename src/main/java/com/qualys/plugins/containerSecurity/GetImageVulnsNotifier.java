@@ -9,10 +9,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
-import com.qualys.plugins.common.QualysAuth.AuthType;
+
+import com.qualys.plugins.containerSecurity.common.QualysAuth.AuthType;
+import com.qualys.plugins.containerSecurity.common.QualysAuth.QualysAuth;
+import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSClient;
+import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSTestConnectionResponse;
 import com.qualys.plugins.containerSecurity.util.OAuthCredential;
 
 import javax.annotation.Nonnull;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -28,9 +37,6 @@ import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
-import com.qualys.plugins.common.QualysAuth.QualysAuth;
-import com.qualys.plugins.common.QualysClient.QualysCSClient;
-import com.qualys.plugins.common.QualysClient.QualysCSTestConnectionResponse;
 import com.qualys.plugins.containerSecurity.config.QualysGlobalConfig;
 import com.qualys.plugins.containerSecurity.model.ProxyConfiguration;
 import com.qualys.plugins.containerSecurity.util.Helper;
@@ -55,11 +61,7 @@ import hudson.util.ListBoxModel;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
-import qshaded.com.google.gson.Gson;
-import qshaded.com.google.gson.JsonArray;
-import qshaded.com.google.gson.JsonElement;
-import qshaded.com.google.gson.JsonObject;
-import qshaded.com.google.gson.reflect.TypeToken;
+
 
 import static com.qualys.plugins.containerSecurity.util.Helper.buildMaskedLabel;
 import static com.qualys.plugins.containerSecurity.util.Helper.safe;
@@ -939,7 +941,7 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
                         OAuthCredential oauth = (OAuthCredential) credentials;
                         String clientId = oauth.getClientId();
                         String clientSecret = oauth.getClientSecret();
-                        auth.setQualysCredentials(apiServer,AuthType.OAuth,"","",clientId,clientSecret);
+                        auth.setQualysCredentials(apiServer, AuthType.OAuth,"","",clientId,clientSecret);
                     } else
                         throw new IllegalArgumentException("Unsupported credential type: " + credentials.getClass());
                 } else

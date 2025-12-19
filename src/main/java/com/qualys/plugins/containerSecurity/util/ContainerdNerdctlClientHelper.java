@@ -1,10 +1,12 @@
 package com.qualys.plugins.containerSecurity.util;
 
 import hudson.AbortException;
-import qshaded.com.google.gson.JsonArray;
-import qshaded.com.google.gson.JsonElement;
-import qshaded.com.google.gson.JsonObject;
-import qshaded.com.google.gson.JsonParser;
+
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -132,7 +134,7 @@ public class ContainerdNerdctlClientHelper {
         String command = EXPORT_PATH_CMD + this.nerdctlBinaryPath + ";" + NERDCTL_VERSION_CMD;
         String versionInfo = this.executeCommand(command);
         if (!versionInfo.toLowerCase().contains("version"))
-            throw new AbortException("Crictl Binary path is not set properly.");
+            throw new AbortException("Nerdctl Binary path is not set properly.");
     }
 
     private String executeCommand(String command) {

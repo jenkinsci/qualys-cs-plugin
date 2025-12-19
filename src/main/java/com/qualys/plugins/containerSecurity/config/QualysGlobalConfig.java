@@ -4,7 +4,10 @@ import java.io.File;
 import java.util.*;
 
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
-import com.qualys.plugins.common.QualysAuth.AuthType;
+import com.qualys.plugins.containerSecurity.common.QualysAuth.AuthType;
+import com.qualys.plugins.containerSecurity.common.QualysAuth.QualysAuth;
+import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSClient;
+import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSTestConnectionResponse;
 import com.qualys.plugins.containerSecurity.util.OAuthCredential;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -41,9 +44,7 @@ import jenkins.model.Jenkins;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.qualys.plugins.common.QualysAuth.QualysAuth;
-import com.qualys.plugins.common.QualysClient.QualysCSClient;
-import com.qualys.plugins.common.QualysClient.QualysCSTestConnectionResponse;
+
 
 import static com.qualys.plugins.containerSecurity.util.Helper.buildMaskedLabel;
 import static com.qualys.plugins.containerSecurity.util.Helper.safe;
@@ -208,7 +209,7 @@ public class QualysGlobalConfig extends GlobalConfiguration {
                 StandardUsernamePasswordCredentials userPass = (StandardUsernamePasswordCredentials) credentials;
                 apiUser = (userPass != null ? userPass.getUsername() : "");
                 apiPass = (userPass != null ? userPass.getPassword().getPlainText() : "");
-                auth.setQualysCredentials(apiServer,AuthType.Basic,apiUser,apiPass,"","");
+                auth.setQualysCredentials(apiServer, AuthType.Basic,apiUser,apiPass,"","");
             } else if (credentials instanceof OAuthCredential) {
                 OAuthCredential oauth = (OAuthCredential) credentials;
                 String clientId = oauth.getClientId();
