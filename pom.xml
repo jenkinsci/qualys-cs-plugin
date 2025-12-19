@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.qualys.plugins</groupId>
     <artifactId>qualys-cs</artifactId>
-    <version>1.8.0.0-SNAPSHOT</version>
+    <version>1.8.0.1-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <dependencyManagement>
         <dependencies>
