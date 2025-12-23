@@ -40,7 +40,7 @@ public class OAuthCredential extends BaseStandardCredentials {
 
         @Override
         public String getDisplayName() {
-            return "OAuth Credential";
+            return "Qualys OAuth Credential";
         }
 
         // Expose scopes to Jelly
