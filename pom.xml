@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.qualys.plugins</groupId>
     <artifactId>qualys-cs</artifactId>
-    <version>1.8.0.3-SNAPSHOT</version>
+    <version>1.8.0.3</version>
     <packaging>hpi</packaging>
     <dependencyManagement>
         <dependencies>
@@ -266,7 +266,7 @@
         <connection>scm:git:https://github.com/jenkinsci/qualys-cs-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/qualys-cs-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/qualys-cs-plugin</url>
-        <tag>HEAD</tag>
+        <tag>qualys-cs-1.8.0.3</tag>
     </scm>
     <organization>
         <name>Qualys Inc.</name>
