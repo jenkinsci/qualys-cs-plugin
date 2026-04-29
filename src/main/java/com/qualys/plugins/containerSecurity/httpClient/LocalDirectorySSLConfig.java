@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.AccessController;
@@ -18,9 +19,12 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.qualys.plugins.containerSecurity.util.CertificateUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * SSL Config from local files.
  */
+@SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Catching Exception is intentional for graceful error handling")
 public class LocalDirectorySSLConfig implements Serializable {
 	private static final long serialVersionUID = -4736328026418377358L;
 
@@ -50,9 +54,9 @@ public class LocalDirectorySSLConfig implements Serializable {
 				String keyPemPath = dockerCertPath + File.separator + "key.pem";
 				String certPemPath = dockerCertPath + File.separator + "cert.pem";
 
-				String keypem = new String(Files.readAllBytes(Paths.get(keyPemPath)));
-				String certpem = new String(Files.readAllBytes(Paths.get(certPemPath)));
-				String capem = new String(Files.readAllBytes(Paths.get(caPemPath)));
+				String keypem = new String(Files.readAllBytes(Paths.get(keyPemPath)), StandardCharsets.UTF_8);
+				String certpem = new String(Files.readAllBytes(Paths.get(certPemPath)), StandardCharsets.UTF_8);
+				String capem = new String(Files.readAllBytes(Paths.get(caPemPath)), StandardCharsets.UTF_8);
 
 				String kmfAlgorithm = AccessController.doPrivileged(
 						getSystemProperty("ssl.keyManagerFactory.algorithm", KeyManagerFactory.getDefaultAlgorithm()));
@@ -72,9 +76,7 @@ public class LocalDirectorySSLConfig implements Serializable {
                 {
                     sslContext = SSLContext.getInstance("TLSv1.2");
                 }
-				if (sslContext != null) {
-					sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-				}
+				sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
 				return sslContext;
 
 

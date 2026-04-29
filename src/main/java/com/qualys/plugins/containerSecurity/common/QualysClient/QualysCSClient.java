@@ -15,10 +15,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import java.io.*;
 import java.net.SocketException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Catching Exception is intentional for graceful error handling")
 public class QualysCSClient extends QualysBaseClient {
     HashMap<String, String> apiMap;
     private String token = null;
@@ -29,7 +33,7 @@ public class QualysCSClient extends QualysBaseClient {
     private boolean validateSubscription(String jwt) {
     	String[] jwtToken = jwt.split("\\.");
     	Base64.Decoder decoder = Base64.getDecoder();  
-        String djwtToken = new String(decoder.decode(jwtToken[1])); 
+        String djwtToken = new String(decoder.decode(jwtToken[1]), StandardCharsets.UTF_8); 
         Gson gson = new Gson();
         JsonObject decodedjwtToken = gson.fromJson(djwtToken, JsonObject.class);
         if (decodedjwtToken.has("modulesAllowed")) {
@@ -42,26 +46,22 @@ public class QualysCSClient extends QualysBaseClient {
         return false;
     }
 
-    private CloseableHttpResponse post() throws Exception {
+    private CloseableHttpResponse post() throws IOException {
     	CloseableHttpResponse response = null;
-    	try {
-            String apiPath = this.getAuthEndpoint(this.apiMap);
-            URL url = this.getAbsoluteUrl(apiPath);
-            this.stream.println("Making Request To: " + url.toString());
-            CloseableHttpClient httpclient = this.getHttpClient();
-            HttpPost postRequest = new HttpPost(url.toString());
-            Map<String, String> headers = this.getAuthHeaders();
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                postRequest.addHeader(entry.getKey(), entry.getValue());
-            }
+        String apiPath = this.getAuthEndpoint(this.apiMap);
+        URL url = this.getAbsoluteUrl(apiPath);
+        this.stream.println("Making Request To: " + url.toString());
+        CloseableHttpClient httpclient = this.getHttpClient();
+        HttpPost postRequest = new HttpPost(url.toString());
+        Map<String, String> headers = this.getAuthHeaders();
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            postRequest.addHeader(entry.getKey(), entry.getValue());
+        }
 
-            postRequest.setEntity(new ByteArrayEntity(this.getAuthEntity()));
-        	response = httpclient.execute(postRequest); 
+        postRequest.setEntity(new ByteArrayEntity(this.getAuthEntity()));
+        response = httpclient.execute(postRequest); 
             
-        	System.out.println("Post request status: "+response.getStatusLine().getStatusCode());
-		} catch (Exception e) {
-			throw e;
-        }   
+        System.out.println("Post request status: "+response.getStatusLine().getStatusCode());
     	return response;
     }
     
@@ -75,10 +75,13 @@ public class QualysCSClient extends QualysBaseClient {
 	    	try {
                 response = this.post();
 		    	if(response.getEntity()!=null) {
-		            BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-		            String output;
-		            while ((output = br.readLine()) != null) {
-		                output_msg += output;
+		            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8))) {
+		                String output;
+		                StringBuilder sb = new StringBuilder();
+		                while ((output = br.readLine()) != null) {
+		                    sb.append(output);
+		                }
+		                output_msg = sb.toString();
 		            }
 		    	}
 		    	this.tmp_token = output_msg;
@@ -98,7 +101,7 @@ public class QualysCSClient extends QualysBaseClient {
 	        	if(timeInterval < this.retryCount) {
 		        	try {
 		        		this.stream.println("Retry fetching auth token ...");
-		        		Thread.sleep(this.retryInterval * 1000);
+		        		Thread.sleep(this.retryInterval * 1000L);
 		        	} catch (Exception e1) {
 		            	this.stream.println("Exception : "+e1);
 		            	throw e1;
@@ -216,10 +219,13 @@ public class QualysCSClient extends QualysBaseClient {
     	    	response = httpclient.execute(getRequest); 
         	}
 	    	if(response.getEntity()!=null) {
-	            BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-	            String output;
-	            while ((output = br.readLine()) != null) {
-	                apiResponseString += output;
+	            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8))) {
+	                String output;
+	                StringBuilder sb = new StringBuilder();
+	                while ((output = br.readLine()) != null) {
+	                    sb.append(output);
+	                }
+	                apiResponseString = sb.toString();
 	            }
 	
 	            JsonParser jsonParser = new JsonParser();

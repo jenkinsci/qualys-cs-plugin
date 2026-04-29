@@ -44,7 +44,7 @@ import jenkins.model.Jenkins;
 
 import org.apache.commons.lang.StringUtils;
 
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import static com.qualys.plugins.containerSecurity.util.Helper.buildMaskedLabel;
 import static com.qualys.plugins.containerSecurity.util.Helper.safe;
@@ -95,13 +95,14 @@ public class QualysGlobalConfig extends GlobalConfiguration {
     private String cvssThreshold;
     private boolean failByCvss = false;
 	
-	private final String URL_REGEX = "^(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
-    private final String PROXY_REGEX = "^((https?)://)?[-a-zA-Z0-9+&@#/%?=~_|!,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
-    private final String TIMEOUT_PERIOD_REGEX = "^(\\d+[*]?)*(?<!\\*)$";
+	private static final String URL_REGEX = "^(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+    private static final String PROXY_REGEX = "^((https?)://)?[-a-zA-Z0-9+&@#/%?=~_|!,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+    private static final String TIMEOUT_PERIOD_REGEX = "^(\\d+[*]?)*(?<!\\*)$";
 	
 	private static final XStream2 XSTREAM2 = new XStream2();
 	private final static Logger logger = Logger.getLogger(GetImageVulnsNotifier.class.getName());
 	
+	@SuppressFBWarnings(value = "MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR", justification = "load() is a standard Jenkins pattern for GlobalConfiguration")
 	public QualysGlobalConfig() {
         load();
     }
@@ -114,7 +115,10 @@ public class QualysGlobalConfig extends GlobalConfiguration {
 
     @Override
     protected XmlFile getConfigFile() {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j == null) {
+            throw new IllegalStateException("Jenkins instance is not available");
+        }
         File rootDir = j.getRootDir();
         File xmlFile = new File(rootDir, "jenkins.plugins.qualys_cs.QualysCS.xml");
         return new XmlFile(XSTREAM2, xmlFile);
@@ -131,7 +135,8 @@ public class QualysGlobalConfig extends GlobalConfiguration {
     public ListBoxModel doFillCredentialsIdItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
         StandardListBoxModel result = new StandardListBoxModel();
         if (item == null) {
-        	if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
+        	if (jenkins == null || !jenkins.hasPermission(Jenkins.ADMINISTER)) {
             	return result.add(credentialsId);
             }
         } else {
@@ -161,10 +166,13 @@ public class QualysGlobalConfig extends GlobalConfiguration {
     
     @POST
     public ListBoxModel doFillProxyCredentialsIdItems(@AncestorInPath Item item, @QueryParameter String proxyCredentialsId) {
-    	Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        if (jenkins != null) {
+            jenkins.checkPermission(Jenkins.ADMINISTER);
+        }
         StandardListBoxModel result = new StandardListBoxModel();
         if (item == null) {
-        	if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+        	if (jenkins == null || !jenkins.hasPermission(Jenkins.ADMINISTER)) {
             	return result.add(proxyCredentialsId);
             }
         } else {
@@ -192,7 +200,10 @@ public class QualysGlobalConfig extends GlobalConfiguration {
     @POST
     public FormValidation doCheckConnection(@QueryParameter String apiServer, @QueryParameter String credentialsId, @QueryParameter String proxyServer, @QueryParameter String proxyPort,
     		@QueryParameter String proxyCredentialsId, @QueryParameter boolean useProxy, @AncestorInPath Item item) {
-    	Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        if (jenkins != null) {
+            jenkins.checkPermission(Jenkins.ADMINISTER);
+        }
     	String apiUser = "";
         String apiPass = "";
         String proxyUsername = "";
@@ -205,10 +216,12 @@ public class QualysGlobalConfig extends GlobalConfiguration {
                             null,
                             Collections.<DomainRequirement>emptyList()),
                     CredentialsMatchers.withId(credentialsId));
-            if (credentials instanceof StandardUsernamePasswordCredentials) {
+            if (credentials == null) {
+                return FormValidation.error("Credentials not found for the given credentials ID");
+            } else if (credentials instanceof StandardUsernamePasswordCredentials) {
                 StandardUsernamePasswordCredentials userPass = (StandardUsernamePasswordCredentials) credentials;
-                apiUser = (userPass != null ? userPass.getUsername() : "");
-                apiPass = (userPass != null ? userPass.getPassword().getPlainText() : "");
+                apiUser = userPass.getUsername();
+                apiPass = userPass.getPassword().getPlainText();
                 auth.setQualysCredentials(apiServer, AuthType.Basic,apiUser,apiPass,"","");
             } else if (credentials instanceof OAuthCredential) {
                 OAuthCredential oauth = (OAuthCredential) credentials;

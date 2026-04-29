@@ -25,6 +25,8 @@ import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -1123,6 +1125,7 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
 
 	@Extension
 	@Symbol(value = { "getImageVulnsFromQualys" })
+	@SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Catching Exception is intentional for graceful error handling")
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         private final static String URL_REGEX = "^(https?)://[-a-zA-Z0-9+&#/%?=~_|!:,.;]*[-a-zA-Z0-9+&#/%=~_|]";
@@ -1439,10 +1442,12 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
                                     null,
                                     Collections.<DomainRequirement>emptyList()),
                             CredentialsMatchers.withId(credentialsId));
-                    if (credentials instanceof StandardUsernamePasswordCredentials) {
+                    if (credentials == null) {
+                        return FormValidation.error("Credentials not found for the given credentials ID");
+                    } else if (credentials instanceof StandardUsernamePasswordCredentials) {
                         StandardUsernamePasswordCredentials userPass = (StandardUsernamePasswordCredentials) credentials;
-                        apiUser = (userPass != null ? userPass.getUsername() : "");
-                        apiPass = (userPass != null ? userPass.getPassword().getPlainText() : "");
+                        apiUser = userPass.getUsername();
+                        apiPass = userPass.getPassword().getPlainText();
                         auth.setQualysCredentials(apiServer, AuthType.Basic, apiUser, apiPass,"","");
                     } else if (credentials instanceof OAuthCredential) {
                         OAuthCredential oauth = (OAuthCredential) credentials;
@@ -1493,7 +1498,8 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
         public ListBoxModel doFillCredentialsIdItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
         	StandardListBoxModel result = new StandardListBoxModel();
             if (item == null) {
-            	if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+                Jenkins jenkins = Jenkins.getInstanceOrNull();
+            	if (jenkins == null || !jenkins.hasPermission(Jenkins.ADMINISTER)) {
                 	return result.add(credentialsId);
                 }
             } else {
@@ -1526,7 +1532,8 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
         public ListBoxModel doFillProxyCredentialsIdItems(@AncestorInPath Item item, @QueryParameter String proxyCredentialsId) {
             StandardListBoxModel result = new StandardListBoxModel();
             if (item == null) {
-            	if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+                Jenkins jenkins = Jenkins.getInstanceOrNull();
+            	if (jenkins == null || !jenkins.hasPermission(Jenkins.ADMINISTER)) {
                 	return result.add(proxyCredentialsId);
                 }
             } else {
@@ -1577,7 +1584,7 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
         public FormValidation doCheckImageIds(@QueryParameter String imageIds) {
         	if (StringUtils.isBlank(imageIds))
 	        {
-        		FormValidation.error("Image Ids cannot be empty");
+        		return FormValidation.error("Image Ids cannot be empty");
 	        } else {
 	        	String[] imageIdsString = imageIds.split(",");
         		for (String imageId : imageIdsString) {
@@ -1590,7 +1597,7 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
        	       		 		Pattern pattern3 = Pattern.compile(Helper.IMAGE_ENV_VAR);
        	       		 		Matcher matcher3 = pattern3.matcher(imageId.trim());
        	       		 		if (!matcher3.find()) {
-       	       		 			FormValidation.error(imageId.trim() + " is not a valid image ID or name");
+       	       		 			return FormValidation.error(imageId.trim() + " is not a valid image ID or name");
        	       		 		}
        	       		 	}
     	       		 }

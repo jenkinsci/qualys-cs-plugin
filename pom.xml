@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.76</version>
+        <version>4.86</version>
         <relativePath />
     </parent>
     <groupId>com.qualys.plugins</groupId>
@@ -16,17 +16,18 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.426.x</artifactId>
-                <version>2779.v391653d9c5da_</version>
+                <artifactId>bom-2.492.x</artifactId>
+                <version>4228.v0a_71308d905b_</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
     <properties>
-        <jenkins.version>2.426.2</jenkins.version>
-        <java.version>11</java.version>
-        <java.level>11</java.level>
+        <jakarta.servlet-api.version>5.0.0</jakarta.servlet-api.version>
+        <jenkins.version>2.492.1</jenkins.version>
+        <java.version>21</java.version>
+        <java.level>21</java.level>
     </properties>
 
     <build>
@@ -72,8 +73,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>21</source>
+                    <target>21</target>
                 </configuration>
             </plugin>
 
@@ -89,7 +90,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.1.4</version>
+                <version>4.8.6.6</version>
                 <configuration>
                     <effort>Max</effort>
                     <threshold>Low</threshold>
@@ -109,6 +110,14 @@
                 <artifactId>animal-sniffer-maven-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
                 </configuration>
             </plugin>
         </plugins>
@@ -146,6 +155,12 @@
         </pluginRepository>
     </pluginRepositories>
     <dependencies>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${jakarta.servlet-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-step-api</artifactId>

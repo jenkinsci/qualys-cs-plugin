@@ -18,8 +18,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.logging.Logger;
+import java.util.Locale;
 
 import javax.net.ssl.SSLContext;
 
@@ -43,7 +42,9 @@ import org.scalasbt.ipcsocket.UnixDomainSocket;
 
 import com.qualys.plugins.containerSecurity.httpClient.LocalDirectorySSLConfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Catching Exception is intentional for graceful error handling")
 public class DockerClientHelper {
 	private final static Logger logger = Logger.getLogger(Helper.class.getName());
 	private PrintStream buildLogger;
@@ -157,19 +158,17 @@ public class DockerClientHelper {
 			String dockerCertPath = checkDockerCertPath(this.dockerCert);
 			sslConfig = new LocalDirectorySSLConfig(dockerCertPath);
 
-			if (sslConfig != null) {
-				try {
-					SSLContext sslContext = sslConfig.getSSLContext();
-					if (sslContext != null) {
-						socketFactoryRegistry = socketFactoryRegistryBuilder
-								.register("https", new SSLConnectionSocketFactory(sslContext)).build();
-					}
-					else {
-						throw new AbortException("Unable to find SSL Context");
-					}
-				} catch (Exception e) {
-					throw new RuntimeException(e);
+			try {
+				SSLContext sslContext = sslConfig.getSSLContext();
+				if (sslContext != null) {
+					socketFactoryRegistry = socketFactoryRegistryBuilder
+							.register("https", new SSLConnectionSocketFactory(sslContext)).build();
 				}
+				else {
+					throw new AbortException("Unable to find SSL Context");
+				}
+			} catch (Exception e) {
+				throw new RuntimeException(e);
 			}
 
 			BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager(
@@ -183,10 +182,10 @@ public class DockerClientHelper {
 
 		try {
 			HttpContext context = new BasicHttpContext();
-			if (action.toLowerCase().equals("get")) {
+			if (action.toLowerCase(Locale.ROOT).equals("get")) {
 				request = new HttpGet(URI.create(path));
 			}
-			if (action.toLowerCase().equals("post")) {
+			if (action.toLowerCase(Locale.ROOT).equals("post")) {
 				request = new HttpPost(URI.create(path));
 			}
 

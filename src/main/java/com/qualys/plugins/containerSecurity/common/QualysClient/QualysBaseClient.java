@@ -17,6 +17,7 @@ import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,12 +69,12 @@ class QualysBaseClient {
         else if (String.valueOf(this.auth.getAuthType()).equalsIgnoreCase("OAUTH"))
             return new byte[0];
         else
-            return null;
+            return new byte[0];
     }
 
     protected byte[] getBasicAuthJWTEncodedEntity() throws UnsupportedEncodingException {
         String userPass = "username=" + java.net.URLEncoder.encode(this.auth.getUsername(), "UTF-8") + "&password=" + java.net.URLEncoder.encode(this.auth.getPassword(), "UTF-8") + "&token=true";
-        return userPass.getBytes();
+        return userPass.getBytes(StandardCharsets.UTF_8);
     }
     
     protected CloseableHttpClient getHttpClient() {

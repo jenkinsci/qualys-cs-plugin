@@ -6,7 +6,7 @@ import java.util.List;
 
 public class QualysAuth {
     AuthType authType;
-    private String server;
+    private String server = "";
     private String username;
     private String password;
     private String clientId;
@@ -18,9 +18,9 @@ public class QualysAuth {
     private int proxyPort;
 
     private String gatewayURL = null;
-    public static final List<String> serverPlatformURL = new ArrayList<String>();
-    public static final List<String> serverApiURL = new ArrayList<String>();
-    public static final List<String> serverGatewayURL = new ArrayList<String>();
+    static final List<String> serverPlatformURL = new ArrayList<String>();
+    static final List<String> serverApiURL = new ArrayList<String>();
+    static final List<String> serverGatewayURL = new ArrayList<String>();
 
     public QualysAuth() {
 

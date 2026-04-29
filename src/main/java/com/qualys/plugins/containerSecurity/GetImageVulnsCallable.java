@@ -2,11 +2,7 @@ package com.qualys.plugins.containerSecurity;
 
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -30,7 +26,6 @@ public class GetImageVulnsCallable implements Callable<String> {
     private PrintStream buildLogger; 
     private int pollingIntervalForVulns;
     private int vulnsTimeout;
-    public Set<String> reposArray;
     private String buildDirPath;
     private boolean isFailConditionsConfigured;
     private QualysCSClient qualysClient;
