@@ -1389,7 +1389,8 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
         					return FormValidation.error("Enter valid QID range");
         				}
         			} else {
-        				Integer.parseInt(qid);
+        				@SuppressWarnings("unused")
+        				int validQid = Integer.parseInt(qid);
         			}
         		}
         	} catch (RuntimeException e) {

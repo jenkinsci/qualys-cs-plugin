@@ -483,7 +483,8 @@ public class QualysGlobalConfig extends GlobalConfiguration {
     					return FormValidation.error("Enter valid QID range");
     				}
     			} else {
-    				 Integer.parseInt(qid);
+    				@SuppressWarnings("unused")
+    				int validQid = Integer.parseInt(qid);
     			}
     		}
     	} catch (RuntimeException e) {
@@ -510,7 +511,8 @@ public class QualysGlobalConfig extends GlobalConfiguration {
     					return FormValidation.error("Enter valid QID range");
     				}
     			} else {
-    				 Integer.parseInt(qid);
+    				@SuppressWarnings("unused")
+    				int validQid = Integer.parseInt(qid);
     			}
     		}
     	} catch (RuntimeException e) {

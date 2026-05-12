@@ -46,46 +46,61 @@ public class QualysCSClient extends QualysBaseClient {
         return false;
     }
 
-    private CloseableHttpResponse post() throws IOException {
-    	CloseableHttpResponse response = null;
+    private PostResponse post() throws IOException {
         String apiPath = this.getAuthEndpoint(this.apiMap);
+        if (apiPath == null) {
+            throw new IOException("API path for authentication endpoint is null");
+        }
         URL url = this.getAbsoluteUrl(apiPath);
         this.stream.println("Making Request To: " + url.toString());
-        CloseableHttpClient httpclient = this.getHttpClient();
-        HttpPost postRequest = new HttpPost(url.toString());
-        Map<String, String> headers = this.getAuthHeaders();
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            postRequest.addHeader(entry.getKey(), entry.getValue());
-        }
+        try (CloseableHttpClient httpclient = this.getHttpClient()) {
+            HttpPost postRequest = new HttpPost(url.toString());
+            Map<String, String> headers = this.getAuthHeaders();
+            if (headers != null) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    postRequest.addHeader(entry.getKey(), entry.getValue());
+                }
+            }
 
-        postRequest.setEntity(new ByteArrayEntity(this.getAuthEntity()));
-        response = httpclient.execute(postRequest); 
-            
-        System.out.println("Post request status: "+response.getStatusLine().getStatusCode());
-    	return response;
+            postRequest.setEntity(new ByteArrayEntity(this.getAuthEntity()));
+            try (CloseableHttpResponse response = httpclient.execute(postRequest)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                String responseBody = "";
+                if (response.getEntity() != null) {
+                    try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8))) {
+                        String output;
+                        StringBuilder sb = new StringBuilder();
+                        while ((output = br.readLine()) != null) {
+                            sb.append(output);
+                        }
+                        responseBody = sb.toString();
+                    }
+                }
+                System.out.println("Post request status: " + statusCode);
+                return new PostResponse(statusCode, responseBody);
+            }
+        }
     }
     
-    private CloseableHttpResponse getAuthToken() throws Exception {
+    private static class PostResponse {
+        final int statusCode;
+        final String responseBody;
+        
+        PostResponse(int statusCode, String responseBody) {
+            this.statusCode = statusCode;
+            this.responseBody = responseBody;
+        }
+    }
+    
+    private PostResponse getAuthToken() throws Exception {
     	this.stream.println("Generating Auth Token...");
-    	String output_msg = "";
     	int timeInterval = 0;
-    	CloseableHttpResponse response = null;
+    	PostResponse postResponse = null;
 	    while(timeInterval < this.retryCount) {
-	    	output_msg = "";
 	    	try {
-                response = this.post();
-		    	if(response.getEntity()!=null) {
-		            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8))) {
-		                String output;
-		                StringBuilder sb = new StringBuilder();
-		                while ((output = br.readLine()) != null) {
-		                    sb.append(output);
-		                }
-		                output_msg = sb.toString();
-		            }
-		    	}
-		    	this.tmp_token = output_msg;
-		    	this.stream.println("Fetching auth token: Response code: "+response.getStatusLine().getStatusCode());
+                postResponse = this.post();
+		    	this.tmp_token = postResponse.responseBody;
+		    	this.stream.println("Fetching auth token: Response code: "+postResponse.statusCode);
 	    		break;
 			} catch (SocketException e) {
 				this.stream.println("SocketException : "+e);
@@ -113,7 +128,7 @@ public class QualysCSClient extends QualysBaseClient {
 	        	
 	        }
 	    }
-        return response;
+        return postResponse;
     }
 
     public QualysCSClient(QualysAuth auth) {
@@ -145,12 +160,12 @@ public class QualysCSClient extends QualysBaseClient {
     
     public QualysCSTestConnectionResponse testConnection() {
     	String errorMessage = "";
-    	CloseableHttpResponse response = null;
+    	PostResponse postResponse = null;
     	boolean success = false;
     	try {
-    		response = getAuthToken();
+    		postResponse = getAuthToken();
 	    	boolean isValidToken = false;
-            if (response.getStatusLine().getStatusCode() == 201 || response.getStatusLine().getStatusCode() == 200) {
+            if (postResponse.statusCode == 201 || postResponse.statusCode == 200) {
 	    		this.stream.println("Token Generation SUCCESSFULL");
 	    		isValidToken = validateSubscription(this.tmp_token);
 	    	
@@ -164,20 +179,20 @@ public class QualysCSClient extends QualysBaseClient {
 		    		success = false;
 		    		this.stream.println("Token validation FAIL");
 		    	}
-	    	} else if (response.getStatusLine().getStatusCode() == 401){
+	    	} else if (postResponse.statusCode == 401){
 	    		this.stream.println("Connection test failed; "+this.tmp_token);
 	    		errorMessage = "Connection test failed; response code : 401; Please provide valid Qualys credentials";
 			} else {
 				this.stream.println("Error testing connection; "+this.tmp_token);
-				errorMessage ="Error testing connection; Server returned: "+ response.getStatusLine().getStatusCode() + "; " + " Invalid inputs or something went wrong with server. Please check API server and/or proxy details.";
+				errorMessage ="Error testing connection; Server returned: "+ postResponse.statusCode + "; " + " Invalid inputs or something went wrong with server. Please check API server and/or proxy details.";
 			}
 	    	
     	} catch (Exception e) {
         	errorMessage = "Error testing connection; Reason: " + e;
         }
     	QualysCSTestConnectionResponse resp = null;
-    	if(response != null) {
-    		resp = new QualysCSTestConnectionResponse(response.getStatusLine().getStatusCode(), success, errorMessage);
+    	if(postResponse != null) {
+    		resp = new QualysCSTestConnectionResponse(postResponse.statusCode, success, errorMessage);
     	}
     	else {
     		resp = new QualysCSTestConnectionResponse(0, success, errorMessage);
@@ -201,24 +216,25 @@ public class QualysCSClient extends QualysBaseClient {
 	    		if(!testConnectionResponse.success) {
 	    			apiResponse.errored = true;
 	                apiResponse.errorMessage = "Token generation failed";
-	                return apiResponse;
 	    		}
 	    	}
-	    	getRequest.addHeader("Authorization", "Bearer " +  this.token);
-	    	response = httpclient.execute(getRequest); 
-	    	apiResponse.responseCode = response.getStatusLine().getStatusCode();
-	    	if (apiResponse.responseCode == 401 && apiResponse.response.get("message").toString().contains("JWT expired")) {
-    	    	this.stream.println("JWT Token is expired. Regenerating token ... ");
-        		QualysCSTestConnectionResponse testConnectionResponse = this.testConnection();
-        		if(!testConnectionResponse.success) {
-	    			apiResponse.errored = true;
-	                apiResponse.errorMessage = "Token generation failed";
-	                return apiResponse;
-	    		}
-        		getRequest.addHeader("Authorization", "Bearer " +  this.token);
-    	    	response = httpclient.execute(getRequest); 
-        	}
-	    	if(response.getEntity()!=null) {
+	    	if (!apiResponse.errored) {
+	    		getRequest.addHeader("Authorization", "Bearer " +  this.token);
+	    		response = httpclient.execute(getRequest); 
+	    		apiResponse.responseCode = response.getStatusLine().getStatusCode();
+	    		if (apiResponse.responseCode == 401 && apiResponse.response.get("message").toString().contains("JWT expired")) {
+    	    		this.stream.println("JWT Token is expired. Regenerating token ... ");
+        			QualysCSTestConnectionResponse testConnectionResponse = this.testConnection();
+        			if(!testConnectionResponse.success) {
+	    				apiResponse.errored = true;
+	                	apiResponse.errorMessage = "Token generation failed";
+	    			} else {
+        				getRequest.addHeader("Authorization", "Bearer " +  this.token);
+    	    			response = httpclient.execute(getRequest); 
+	    			}
+        		}
+	    	}
+	    	if(response != null && response.getEntity()!=null) {
 	            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8))) {
 	                String output;
 	                StringBuilder sb = new StringBuilder();
@@ -239,7 +255,22 @@ public class QualysCSClient extends QualysBaseClient {
         } catch (Exception e) {
             apiResponse.errored = true;
             apiResponse.errorMessage = e.getMessage();
-        }  
+        } finally {
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    this.stream.println("Error closing response: " + e.getMessage());
+                }
+            }
+            if (httpclient != null) {
+                try {
+                    httpclient.close();
+                } catch (IOException e) {
+                    this.stream.println("Error closing httpclient: " + e.getMessage());
+                }
+            }
+        }
         return apiResponse;
     }
 }
