@@ -6,6 +6,7 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Set;
 
 public class SoftwareCriteria {
@@ -26,7 +27,7 @@ public class SoftwareCriteria {
             this.filters.add(filter);
 
             JsonObject swFilterObject = this.getSoftwareNameAndVersion(filter);
-            String name = swFilterObject.get("name").getAsString().toLowerCase();
+            String name = swFilterObject.get("name").getAsString().toLowerCase(Locale.ROOT);
             if (!this.criteriaObject.has(name)) {
                 this.criteriaObject.add(name, new JsonArray());
             }
@@ -76,7 +77,7 @@ public class SoftwareCriteria {
             String name = software.get("name").getAsString();
             
             for (String n : this.namesSet) {
-	            if (name.toLowerCase().matches(n)) {
+	            if (name.toLowerCase(Locale.ROOT).matches(n)) {
 	            	software.addProperty("criteriaKey", n);
 	                this.namesFound.add(software);
 	            }
@@ -111,21 +112,20 @@ public class SoftwareCriteria {
     }
 
     private boolean compareSoftware(JsonObject software) {
-        String name = software.get("criteriaKey").getAsString().toLowerCase();
+        String name = software.get("criteriaKey").getAsString().toLowerCase(Locale.ROOT);
         JsonArray filtersArray = this.criteriaObject.getAsJsonArray(name);
-        boolean result = false;
 
         for (JsonElement filter : filtersArray) {
             JsonObject configuredFilter = filter.getAsJsonObject();
             
             if (configuredFilter.get("operator").isJsonNull()) {
-                result = result || true;
+                return true;
             } else if (configuredFilter.get("operator").getAsString().equals("=") &&
                     software.get("version").getAsString().matches(configuredFilter.get("version").getAsString())) {
-                result = result || true;
+                return true;
             }
         }
 
-        return result;
+        return false;
     }
 }

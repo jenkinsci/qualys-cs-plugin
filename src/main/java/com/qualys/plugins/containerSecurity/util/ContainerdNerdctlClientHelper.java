@@ -12,8 +12,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.logging.Logger;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Catching Exception is intentional for graceful error handling")
 public class ContainerdNerdctlClientHelper {
     private static final Logger logger = Logger.getLogger(ContainerdNerdctlClientHelper.class.getName());
     private static final String EXPORT_PATH_CMD = "export PATH=$PATH:";
@@ -142,14 +147,15 @@ public class ContainerdNerdctlClientHelper {
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.command("bash", "-c", command);
             Process process = processBuilder.start();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            String commandOutput = "";
-            while ((line = reader.readLine()) != null) {
-                commandOutput = commandOutput + line;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                StringBuilder commandOutput = new StringBuilder();
+                while ((line = reader.readLine()) != null) {
+                    commandOutput.append(line);
+                }
+                process.destroy();
+                return commandOutput.toString();
             }
-            process.destroy();
-            return commandOutput;
         } catch (IOException e) {
             throw new RuntimeException("Failed to execute command " + command
                     + e.getMessage());

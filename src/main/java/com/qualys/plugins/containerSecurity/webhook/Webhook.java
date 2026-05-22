@@ -1,6 +1,7 @@
 package com.qualys.plugins.containerSecurity.webhook;
 
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import org.apache.http.HttpHost;
@@ -21,6 +22,9 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Catching Exception is intentional for graceful error handling")
 public class Webhook{
 	
 	private PrintStream buildLogger;
@@ -94,7 +98,7 @@ public class Webhook{
 
                     if (responseCode != HttpStatus.SC_OK) {
                         String responseBody = response.getEntity() != null
-                                ? new String(response.getEntity().getContent().readAllBytes())
+                                ? new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8)
                                 : "";
 
                         buildLogger.println("Posting data to " + url + " may have failed. Webhook responded with status code - " + responseCode);

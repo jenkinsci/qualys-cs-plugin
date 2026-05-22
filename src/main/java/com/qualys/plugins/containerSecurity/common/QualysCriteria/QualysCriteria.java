@@ -19,10 +19,9 @@ public class QualysCriteria {
 	String excludeBy = "";
 	ArrayList<Integer> qidExcludeFound=  new ArrayList<>(0);
 	ArrayList<String> cveExcludeFound  = new ArrayList<>(0);
-	boolean finalImageStatus = true;
 	ArrayList<String> failedReasons  = new ArrayList<>(0);
 	Gson gsonObject = new Gson();
-	public JsonObject returnObject;
+	private JsonObject returnObject;
 	ArrayList<String> configuredQids;	
 	ArrayList<Integer> qidsFound = new ArrayList<>(0);
 	ArrayList<String> cvesFound = new ArrayList<>(0);
@@ -368,15 +367,16 @@ public class QualysCriteria {
 	
 				JsonObject sevJson = new JsonObject();
 				//sys
-				if(this.severityMap.get(i).intValue() > -1) {
-					sevJson.addProperty("configured", this.severityMap.get(i).intValue());
+				int severityValue = this.severityMap.get(i);
+				if(severityValue > -1) {
+					sevJson.addProperty("configured", severityValue);
 				}else {
 					sevJson.add("configured", null);
 				}
 				if(counts.get(i) > 0) {
 					sevJson.addProperty("found", counts.get(i));
 				}else {
-					if(this.severityMap.get(i).intValue() > -1) {
+					if(severityValue > -1) {
 						sevJson.addProperty("found", 0);
 					}else {
 						sevJson.add("found", null);
@@ -494,7 +494,7 @@ public class QualysCriteria {
 			//following loop is get overall severity Status
 			//if (this.severityMap.get(severity) != -1) { // that particular severity has configured.				
 				int evaluationSevCount= evaluationSev.getOrDefault(severity, 0);
-				if(excludeBy == "qid") {
+				if("qid".equals(excludeBy)) {
 						Integer qid = 0;
 						if (vulnObject.has("qid")) {
 							qid = vulnObject.get("qid").getAsInt();
@@ -506,7 +506,7 @@ public class QualysCriteria {
 							evaluationSevCount++;
 							evaluationSev.put(severity, evaluationSevCount);
 						}
-					}else if(excludeBy == "cve") {		
+					}else if("cve".equals(excludeBy)) {		
 						JsonArray cves = null;
 						if (vulnObject.has("cveids")) {
 							cves = vulnObject.get("cveids").getAsJsonArray();
@@ -598,7 +598,7 @@ public class QualysCriteria {
 			}
 			
 			
-			if(excludeBy == "qid") {
+			if("qid".equals(excludeBy)) {
 				if (this.qidExcludeList.contains(qid)) {
 					qidExcludeFound.add(qid);
 					continue;
@@ -607,7 +607,7 @@ public class QualysCriteria {
 					failedReasons.add("Failing this image because found qid - " +qid+" after exclusion");					
 				}		
 				
-			}else if(excludeBy == "cve") {
+			}else if("cve".equals(excludeBy)) {
 				JsonArray cves = null;
 				if (vulnObject.has("cveids")) {
 					cves = vulnObject.get("cveids").getAsJsonArray();
@@ -618,7 +618,9 @@ public class QualysCriteria {
 					failedReasons.add("Failing this image because found qid - " +qid+" after exclusion");
 				}
 				
-				
+				if (cves == null) {
+					continue;
+				}
 				for (JsonElement cve : cves) {
 					String cveString = cve.getAsString();
 					if (this.cveExcludeList.contains(cveString) ) {
@@ -681,7 +683,10 @@ public class QualysCriteria {
 			JsonArray cves = null;
 			if (vulnObject.has("cveids")) {
 				cves = vulnObject.get("cveids").getAsJsonArray();
-			}	
+			}
+			if (cves == null) {
+				continue;
+			}
 			for (JsonElement cve : cves) {
 				String cveString = cve.getAsString();
 				if (this.cveList.contains(cveString)) {
@@ -692,7 +697,7 @@ public class QualysCriteria {
 				}
 			}
 			
-			if(excludeBy == "cve") {
+			if("cve".equals(excludeBy)) {
 				for (JsonElement cve : cves) {
 					String cveString = cve.getAsString();
 					if (this.cveExcludeList.contains(cveString)) {
@@ -703,7 +708,7 @@ public class QualysCriteria {
 					}
 				}
 				
-			}else if(excludeBy == "qid") {
+			}else if("qid".equals(excludeBy)) {
 				Integer qid = 0;
 				if (vulnObject.has("qid")) {
 					qid = vulnObject.get("qid").getAsInt();

@@ -24,7 +24,7 @@ public class ReportAction implements Action {
     private Run<?, ?> run;
     private int prevBuildNumber;
     private JsonObject reportObject;
-    private JsonObject trendingData;
+    private JsonObject trendingData = new JsonObject();
     private String imageNameInput;
     private String portalURL;
     private String imageSHA;

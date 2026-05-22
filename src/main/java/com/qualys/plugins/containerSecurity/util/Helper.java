@@ -132,68 +132,45 @@ public class Helper{
     }
     
     public static void createZip(String zipFile, String srcDir, PrintStream buildLogger) {
-    	       
-    	FileOutputStream fos = null;
-    	ZipOutputStream zos = null;
-    	FileInputStream fis = null;
-        try {
+        File dir = new File(srcDir);
+
+        //Get only .json files
+        File[] files = dir.listFiles(new FilenameFilter() { 
+            public boolean accept(File dir, String filename)
+                { return filename.endsWith(".json"); }
+            } );
+        
+        if (files == null) {
+            return;
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(zipFile);
+             ZipOutputStream zos = new ZipOutputStream(fos)) {
              
             // create byte buffer
             byte[] buffer = new byte[1024];
-            fos = new FileOutputStream(zipFile);
- 
-            zos = new ZipOutputStream(fos);
- 
-            File dir = new File(srcDir);
- 
-            //Get only .txt files
-            File[] files = dir.listFiles(new FilenameFilter() { 
-                public boolean accept(File dir, String filename)
-                	{ return filename.endsWith(".json"); }
-            	} );
-            
-            if (files == null) {
-            	return;
-            }
+
             for (int i = 0; i < files.length; i++) {
-            		System.out.println("Adding file: " + files[i].getName());
-            		
-            		fis = new FileInputStream(files[i]);
-            		
-            		zos.putNextEntry(new ZipEntry(files[i].getName()));
-            		int length;
-            		while ((length = fis.read(buffer)) > 0) {
-            			zos.write(buffer, 0, length);
-            		}
-            		zos.closeEntry();
-            		
-            		fis.close();
-            		//delete file
-            		if(! files[i].getName().equals("qualys_images_summary.json")) {            			
-            			if (files[i].delete()) {
-            				System.out.println(files[i].getName() + " file moved to zip and deleted.");
-            			}
-            		}
+                System.out.println("Adding file: " + files[i].getName());
+                
+                try (FileInputStream fis = new FileInputStream(files[i])) {
+                    zos.putNextEntry(new ZipEntry(files[i].getName()));
+                    int length;
+                    while ((length = fis.read(buffer)) > 0) {
+                        zos.write(buffer, 0, length);
+                    }
+                    zos.closeEntry();
+                }
+                //delete file
+                if(! files[i].getName().equals("qualys_images_summary.json")) {            			
+                    if (files[i].delete()) {
+                        System.out.println(files[i].getName() + " file moved to zip and deleted.");
+                    }
+                }
             }
-            zos.close();
         }
         catch (IOException ioe) {
-        	buildLogger.println("Error creating zip file" + ioe);
-        }finally {
-        	if (zos != null) {
-        		try {
-					zos.close();
-				} catch (IOException e) {
-					buildLogger.println("Error creating zip file" + e);
-				}
-        	}
-        	if (fis != null) {
-        		try {
-					fis.close();
-				} catch (IOException e) {
-					buildLogger.println("Error creating zip file" + e);
-				}
-        	}
+            buildLogger.println("Error creating zip file" + ioe);
         }
     }
 
