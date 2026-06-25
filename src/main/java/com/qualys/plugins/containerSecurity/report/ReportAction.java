@@ -23,8 +23,8 @@ public class ReportAction implements Action {
     private String dockerImageId;
     private Run<?, ?> run;
     private int prevBuildNumber;
-    private JsonObject reportObject;
-    private JsonObject trendingData = new JsonObject();
+	private transient JsonObject reportObject;
+	private transient JsonObject trendingData;
     private String imageNameInput;
     private String portalURL;
     private String imageSHA;
@@ -81,6 +81,9 @@ public class ReportAction implements Action {
     public JsonObject getTotalVulnsTrend() {
     	Gson gson = new Gson();
     	JsonObject obj = new JsonObject();
+		if (trendingData == null) {
+			return obj;
+		}
     	JsonArray rposArr = trendingData.get("repos").getAsJsonArray();
     	JsonArray vulnsArr = trendingData.get("confirmedVulns").getAsJsonArray();
     	JsonArray totalVulns = gson.fromJson(vulnsArr, JsonArray.class);
