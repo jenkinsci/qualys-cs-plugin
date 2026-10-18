@@ -256,12 +256,15 @@
   	</div>	
 </div>
 
+<div id="qualys-report-data" hidden="hidden" data-report-object="${it.reportJsonObject}" data-image-name="${it.imageNameOrImageId}"></div>
+
 <script>
-	reportObject = ${it.reportJsonObject};
-	console.log(reportObject);
-	jQuery(".summary-title #tooltip-title").html("&#160; ${it.imageNameOrImageId}");
-	jQuery(".summary-title .tooltip-text").html("${it.imageNameOrImageId}");
-	jQuery("#imageId").html(reportObject.imageId);
+	var reportData = document.getElementById("qualys-report-data");
+	var reportObject = JSON.parse(reportData.getAttribute("data-report-object"));
+	var imageName = reportData.getAttribute("data-image-name");
+	jQuery(".summary-title #tooltip-title").text("\u00a0 " + imageName);
+	jQuery(".summary-title .tooltip-text").text(imageName);
+	jQuery("#imageId").text(reportObject.imageId);
 	
 	jQuery("#vulnerabilities").hide();
 	jQuery("#installed-softwares").hide();

@@ -9,19 +9,42 @@ function showReportsPage(reportObject){
 	});
 }
 
+function setLabeledValues(selector, values) {
+	var target = jQuery(selector).empty();
+	values.forEach(function(value, index) {
+		if(index > 0) {
+			target.append(document.createElement("br"));
+		}
+		target.append(jQuery("<b>").text(value.label));
+		target.append(document.createTextNode(" " + String(value.value)));
+	});
+}
+
+function escapeHtml(value) {
+	return jQuery("<div>").text(value == null ? "" : String(value)).html();
+}
+
+function renderText(data, type) {
+	return type === "display" ? escapeHtml(data) : data;
+}
+
 function drawSummaryTable(reportObject){
-	/*jQuery("#summary-image-id").html(reportObject.imageId);
-	jQuery(".image-status-flag").addClass(reportObject.imageSummary.pass ? "pass" : "fail");*/
 	if(reportObject.qids){
 		if(reportObject.qids.configured){
 			jQuery("#qid-found .image-scan-status").removeClass("not-configured").addClass(reportObject.qids.result ? "ok" : "fail");
-			jQuery("#qid-found .image-scan-status .tooltip-text").html("<b>Configured:</b> "+reportObject.qids.configured + "<br><b>Found: </b>"+ (reportObject.qids.found ? reportObject.qids.found : "None"));
+			setLabeledValues("#qid-found .image-scan-status .tooltip-text", [
+				{label: "Configured:", value: reportObject.qids.configured},
+				{label: "Found:", value: reportObject.qids.found ? reportObject.qids.found : "None"}
+			]);
 		}
 	}
 	if(reportObject.cveIds){
 		if(reportObject.cveIds.configured ){
 			jQuery("#cve-found .image-scan-status").removeClass("not-configured").addClass(reportObject.cveIds.result ? "ok" : "fail");
-			jQuery("#cve-found .image-scan-status .tooltip-text").html("<b>Configured:</b> "+reportObject.cveIds.configured + "<br><b>Found: </b>"+ (reportObject.cveIds.found ? reportObject.cveIds.found : "None"));
+			setLabeledValues("#cve-found .image-scan-status .tooltip-text", [
+				{label: "Configured:", value: reportObject.cveIds.configured},
+				{label: "Found:", value: reportObject.cveIds.found ? reportObject.cveIds.found : "None"}
+			]);
 		}
 	}
 	if(reportObject.cvss){
@@ -34,17 +57,26 @@ function drawSummaryTable(reportObject){
 			}
 			jQuery("#cvss-found .image-scan-status").removeClass("not-configured").addClass(reportObject.cvss.result ? "ok" : "fail");
 			if(reportObject.cvss.version == "maxOfv2andv3") {
-			    jQuery("#cvss-found .image-scan-status .tooltip-text").html("<b>Configured:</b> Max. of CVSS2 or CVSS3 is greater than or equal to "+reportObject.cvss.configured + "<br><b>Found: </b>"+ (reportObject.cvss.found ? reportObject.cvss.found : "None"));
+				setLabeledValues("#cvss-found .image-scan-status .tooltip-text", [
+					{label: "Configured:", value: "Max. of CVSS2 or CVSS3 is greater than or equal to " + reportObject.cvss.configured},
+					{label: "Found:", value: reportObject.cvss.found ? reportObject.cvss.found : "None"}
+				]);
 			}
 			else{
-			    jQuery("#cvss-found .image-scan-status .tooltip-text").html("<b>Configured:</b> CVSSv"+ version +" more than or equal to "+reportObject.cvss.configured + "<br><b>Found: </b>"+ (reportObject.cvss.found ? reportObject.cvss.found : "None"));
+				setLabeledValues("#cvss-found .image-scan-status .tooltip-text", [
+					{label: "Configured:", value: "CVSSv" + version + " more than or equal to " + reportObject.cvss.configured},
+					{label: "Found:", value: reportObject.cvss.found ? reportObject.cvss.found : "None"}
+				]);
 			}
 		}
 	}
 	if(reportObject.software){
 		if(reportObject.software.configured ){
 			jQuery("#software-found .image-scan-status").removeClass("not-configured").addClass(reportObject.software.result ? "ok" : "fail");
-			jQuery("#software-found .image-scan-status .tooltip-text").html("<b>Configured:</b> "+reportObject.software.configured + "<br><b>Found: </b>"+ (reportObject.software.found ? reportObject.software.found : "None"));
+			setLabeledValues("#software-found .image-scan-status .tooltip-text", [
+				{label: "Configured:", value: reportObject.software.configured},
+				{label: "Found:", value: reportObject.software.found ? reportObject.software.found : "None"}
+			]);
 		}
 	}
 	var severityObj = reportObject["severities"];
@@ -52,13 +84,19 @@ function drawSummaryTable(reportObject){
 		if(severityObj[i])
 			if(!(severityObj[i].configured === null || severityObj[i].configured === -1)){
 				jQuery("#sev" + i + "-found .image-scan-status").removeClass("not-configured").addClass(severityObj[i].result ? "ok" : "fail");
-				jQuery("#sev" + i + "-found .image-scan-status .tooltip-text").html("<b>Configured:</b> more than "+severityObj[i].configured + "<br><b>Found: </b>"+ (severityObj[i].found !== null ? severityObj[i].found : "0"));
+				setLabeledValues("#sev" + i + "-found .image-scan-status .tooltip-text", [
+					{label: "Configured:", value: "more than " + severityObj[i].configured},
+					{label: "Found:", value: severityObj[i].found !== null ? severityObj[i].found : "0"}
+				]);
 			}
 	}
-	if(reportObject.qids.excluded || reportObject.cveIds.excluded)
-		jQuery("#excluded-items").html(reportObject.qids.excluded ? "<b>*Excluded QIDs: </b>" + reportObject.qids.excluded : "<b>*Excluded CVEs: </b>"+ reportObject.cveIds.excluded);
+	if(reportObject.qids.excluded || reportObject.cveIds.excluded) {
+		setLabeledValues("#excluded-items", reportObject.qids.excluded
+			? [{label: "*Excluded QIDs:", value: reportObject.qids.excluded}]
+			: [{label: "*Excluded CVEs:", value: reportObject.cveIds.excluded}]);
+	}
 	if(reportObject.potentialVulnsChecked)
-		jQuery("#potential-checked").html("*Criteria applied to potential vulnerabilities as well.");
+		jQuery("#potential-checked").text("*Criteria applied to potential vulnerabilities as well.");
 }
 
 function showTab(qid) {
@@ -318,27 +356,27 @@ function drawBuildSummary(reportObject){
 }
 	
 function format ( d ) {
-    return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
-	    '<tr>'+
-	    	'<td>CVSS Base Score: ' + d.cvssInfo.baseScore + '</td>'+
-	    	'<td>CVSS Temporal Score: '+ d.cvssInfo.temporalScore +'</td>'+
-	    '</tr>'+
-	    '<tr>'+
-	    	'<td>CVSS3 Base Score: ' + d.cvss3Info.baseScore + '</td>'+
-	    	'<td>CVSS3 Temporal Score: '+ d.cvss3Info.temporalScore +'</td>'+
-	    '</tr>'+
-	    '<tr>'+
-	        '<td>CVSS Access Vector: </td>'+
-	        '<td>'+d.cvssInfo.accessVector+'</td>'+
-	    '</tr>'+
-	    '<tr>'+
-            '<td>CVE Ids</td>'+
-            '<td>'+d.cveids+'</td>'+
-        '</tr>'+
-        '<tr>'+
-            '<td>Result</td>'+
-            '<td>'+d.result+'</td>'+
-        '</tr>'+
+	return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
+		    '<tr>'+
+			'<td>CVSS Base Score: ' + escapeHtml(d.cvssInfo.baseScore) + '</td>'+
+			'<td>CVSS Temporal Score: '+ escapeHtml(d.cvssInfo.temporalScore) +'</td>'+
+		    '</tr>'+
+		    '<tr>'+
+			'<td>CVSS3 Base Score: ' + escapeHtml(d.cvss3Info.baseScore) + '</td>'+
+			'<td>CVSS3 Temporal Score: '+ escapeHtml(d.cvss3Info.temporalScore) +'</td>'+
+		    '</tr>'+
+		    '<tr>'+
+		        '<td>CVSS Access Vector: </td>'+
+		        '<td>'+escapeHtml(d.cvssInfo.accessVector)+'</td>'+
+		    '</tr>'+
+		    '<tr>'+
+	            '<td>CVE Ids</td>'+
+	            '<td>'+escapeHtml(d.cveids)+'</td>'+
+	        '</tr>'+
+	        '<tr>'+
+	            '<td>Result</td>'+
+	            '<td>'+escapeHtml(d.result)+'</td>'+
+	        '</tr>'+
     '</table>';
 }
 
@@ -360,23 +398,26 @@ function drawTables(reportObject){
 		"dom": '<"soft-table-top"l<"softwares-custom-filters"><"#search" "search-box">>frt<"vulns-table-bottom"ip><"clear">',
         "aaData": installedSoftwares,
         "aoColumns":[
-        	{ "mData": "name" },
+            { "mData": "name", "render": renderText },
             { "mData": "version" },
-            { "mData": "fixVersion", sDefaultContent :  '' },
+            { "mData": "fixVersion", "render": renderText, sDefaultContent :  '' },
             { "mData": "vulnerabilities", sDefaultContent :  ''  },
             { "mData": "vulnerabilities", sDefaultContent :  ''  },
-            { "mData": "fixVersion", sDefaultContent :  ''  }            
+            { "mData": "fixVersion", sDefaultContent :  ''  }
         ],
         'aoColumnDefs': [
         	{ "sTitle": "Name", "aTargets": [0] },
             { "sTitle": "Installed Version", "aTargets": [1],
             "render":  function ( data, type, row ) {
+							if(type !== "display") {
+								return data;
+							}
                             var fixedVersion = row["fixVersion"];
                             if (fixedVersion!= null && fixedVersion!= '') {
-                                return '<div class="status-image vuln"></div>'+data;
+                                return '<div class="status-image vuln"></div>'+escapeHtml(data);
                             }
                             else {
-                                return data;
+                                return escapeHtml(data);
                             }
                        }
             },
@@ -384,7 +425,7 @@ function drawTables(reportObject){
             { "sTitle": "Total QID", "aTargets": [3] , visible:false,
             "render":  function ( data, type, row ) {
                             var vulnerabilities = row["vulnerabilities"];       
-                            return JSON.stringify(vulnerabilities);       
+                            return renderText(JSON.stringify(vulnerabilities), type);
                        }
             },
             { "sTitle": "QID", "aTargets": [4] , visible:false,
@@ -396,7 +437,7 @@ function drawTables(reportObject){
                                         QIDString +="QID="+key.qid+",";
                                     });        
                                 }                                    
-                            return QIDString;       
+                            return renderText(QIDString, type);
                        }
             },
             { "sTitle": "Patchable", "aTargets": [5] , visible:false,
@@ -434,7 +475,7 @@ function drawTables(reportObject){
             },
             { "sTitle": "Command", "aTargets": [1],
                 render : function ( data, type, row ) { 
-                     return row["createdBy"];                                               
+                     return renderText(row["createdBy"], type);
                 }
             }
         ]
@@ -460,23 +501,23 @@ function drawTables(reportObject){
 	            "data":      null,
 	            "defaultContent": ''
 	        },
-            { "mData": "qid" },
+            { "mData": "qid", "render": renderText },
             {
                 "className": 'fail',
                 "orderable": false,
                 "data":      null,
                 "defaultContent": ''
             },
-            { "mData": "title" },
-            { "mData": "severity" },
+            { "mData": "title", "render": renderText },
+            { "mData": "severity", "render": renderText },
             { "mData": "cveids" },
-            { "mData": "category" },
+            { "mData": "category", "render": renderText },
             { "mData": "firstFound" },
             { "mData": "software"},
-            { "mData": "patchAvailable"},
+            { "mData": "patchAvailable", "render": renderText},
             { "mData": "threatIntel"},
             { "mData": "threatIntel"},
-            { "mData": "typeDetected"}
+            { "mData": "typeDetected", "render": renderText }
             
         ],
         'aoColumnDefs': [
@@ -576,12 +617,15 @@ function drawTables(reportObject){
             { "sTitle": "Severity", "aTargets": [4] },
             { "sTitle": "CVEs", "aTargets": [5] ,
             	"render":  function ( data, type, row ) {
-            				if(data.length > 1){
-            					return data[0] +' + <a href="#" class="more-cve-records">' + (data.length - 1) +' more</a>';
-            				}else{
-            					return data;
-            				}
-            			}
+                if(type !== "display") {
+                    return data;
+                }
+                if(data.length > 1){
+                    return escapeHtml(data[0]) +' + <a href="#" class="more-cve-records">' + (data.length - 1) +' more</a>';
+                }else{
+                    return escapeHtml(data);
+                }
+            }
             },
             { "sTitle": "Category", "aTargets": [6] },
             { "sTitle": "Age", "aTargets": [7] ,
@@ -596,7 +640,6 @@ function drawTables(reportObject){
             { "sTitle": "Installed Software", "aTargets": [8],
             	"render":  function ( data, type, row ) {
                             var numInstalledSoftwares = row["software"];
-                            var qid = row["qid"];
                             var count = 0;
                             for(var key in numInstalledSoftwares) {
                                if (numInstalledSoftwares.hasOwnProperty(key)) {
@@ -607,7 +650,7 @@ function drawTables(reportObject){
                                 return '<div style="text-align:center;">-</div>';
                             }
                             else {
-                                return '<div style="text-align:center;"><a href="#" onClick="showTab('+qid+')">'+count+'</a></div>';
+                                return '<div style="text-align:center;"><a href="#" class="show-software-tab">'+count+'</a></div>';
                             }                    			
             			} },
             { "sTitle": "Patchable", "aTargets": [9], visible:false},
@@ -648,6 +691,12 @@ function drawTables(reportObject){
     	row.child( format(row.data()) ).show();
         tr.addClass('shown');
         return false;
+    });
+
+    jQuery("#vulnsTable tbody").on("click", ".show-software-tab", function(e){
+        e.preventDefault();
+        var row = table.row(jQuery(this).closest('tr')).data();
+        showTab(row.qid);
     });
     
     
@@ -722,4 +771,3 @@ function drawTables(reportObject){
 }	
 	
 	
-
