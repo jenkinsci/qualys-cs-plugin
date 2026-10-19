@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Collections;
 
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class Helper{
    
@@ -70,6 +70,30 @@ public class Helper{
 		Map<String, String> platform4 = new HashMap <String, String>();
 		platform4.put("name", "AE Platform"); platform4.put("code", "AE_Platform"); platform4.put("url", "https://qualysapi.qg1.apps.qualys.ae");
 		platform4.put("portal", "https://qualysguard.qg1.apps.qualys.ae"); aList.put("AE_Platform", platform4);
+
+		Map<String, String> platform10 = new HashMap <String, String>();
+		platform10.put("name", "US Platform 4"); platform10.put("code", "US_PLATFORM_4"); platform10.put("url", "https://qualysapi.qg4.apps.qualys.com");
+		platform10.put("portal", "https://qualysguard.qg4.apps.qualys.com"); aList.put("US_PLATFORM_4", platform10);
+
+		Map<String, String> platform11 = new HashMap <String, String>();
+		platform11.put("name", "GOV Platform 1"); platform11.put("code", "GOV_PLATFORM_1"); platform11.put("url", "https://qualysapi.gov1.qualys.us");
+		platform11.put("portal", "https://qualysguard.gov1.qualys.us"); aList.put("GOV_PLATFORM_1", platform11);
+
+		Map<String, String> platform12 = new HashMap <String, String>();
+		platform12.put("name", "EU Platform 3"); platform12.put("code", "EU_PLATFORM_3"); platform12.put("url", "https://qualysapi.qg3.apps.qualys.it");
+		platform12.put("portal", "https://qualysguard.qg3.apps.qualys.it"); aList.put("EU_PLATFORM_3", platform12);
+
+		Map<String, String> platform13 = new HashMap <String, String>();
+		platform13.put("name", "UK Platform"); platform13.put("code", "UK_PLATFORM"); platform13.put("url", "https://qualysapi.qg1.apps.qualys.co.uk");
+		platform13.put("portal", "https://qualysguard.qg1.apps.qualys.co.uk"); aList.put("UK_PLATFORM", platform13);
+
+		Map<String, String> platform14 = new HashMap <String, String>();
+		platform14.put("name", "AU Platform"); platform14.put("code", "AU_PLATFORM"); platform14.put("url", "https://qualysapi.qg1.apps.qualys.com.au");
+		platform14.put("portal", "https://qualysguard.qg1.apps.qualys.com.au"); aList.put("AU_PLATFORM", platform14);
+
+		Map<String, String> platform15 = new HashMap <String, String>();
+		platform15.put("name", "KSA Platform"); platform15.put("code", "KSA_PLATFORM"); platform15.put("url", "https://qualysapi.qg1.apps.qualysksa.com");
+		platform15.put("portal", "https://qualysguard.qg1.apps.qualysksa.com"); aList.put("KSA_PLATFORM", platform15);
 
 		Map<String, String> platform9 = new HashMap <String, String>();
 		platform9.put("name", "Private Cloud Platform"); platform9.put("code", "PCP"); platform9.put("url", "");
@@ -175,8 +199,8 @@ public class Helper{
     }
 
     public static String buildMaskedLabel(String idPart, String maskedSecret, String description, String id) {
-        String base = (idPart != null && !idPart.trim().isEmpty()) ? idPart.trim() : "";
-        String label = base.isEmpty() ? maskedSecret : (base + "/" + maskedSecret);
+        String credId = (id != null && !id.trim().isEmpty()) ? id.trim() : "";
+        String label = credId + "/" + idPart;
         if (description != null && !description.trim().isEmpty()) {
             label += " (" + description.trim() + ")";
         }

@@ -486,6 +486,10 @@ public class QualysCriteria {
 				}
 			
 					
+			if (typeDetected.equals("IGS")) {
+				continue;
+			}
+			
 			if (typeDetected.equals("POTENTIAL") && !this.checkPotentialVulns) {
 				continue;
 			}			
@@ -582,7 +586,8 @@ public class QualysCriteria {
 		for (JsonElement vuln : vulns) {	
 			JsonObject vulnObject = vuln.getAsJsonObject();
 			
-			if (vulnObject.has("typeDetected") && vulnObject.get("typeDetected").getAsString().equals("POTENTIAL") && !this.checkPotentialVulns) {
+			String typeDetected = vulnObject.has("typeDetected") ? vulnObject.get("typeDetected").getAsString() : "";
+			if (typeDetected.equals("IGS") || (typeDetected.equals("POTENTIAL") && !this.checkPotentialVulns)) {
 				continue;	
 			}			
 			
@@ -674,7 +679,8 @@ public class QualysCriteria {
 		Boolean cveStatus = true;
 		for (JsonElement vuln : vulns) {	
 			JsonObject vulnObject = vuln.getAsJsonObject();
-			if (vulnObject.has("typeDetected") && vulnObject.get("typeDetected").getAsString().equals("POTENTIAL") && !this.checkPotentialVulns) {
+			String typeDetected = vulnObject.has("typeDetected") ? vulnObject.get("typeDetected").getAsString() : "";
+			if (typeDetected.equals("IGS") || (typeDetected.equals("POTENTIAL") && !this.checkPotentialVulns)) {
 				continue;	
 			}
 			

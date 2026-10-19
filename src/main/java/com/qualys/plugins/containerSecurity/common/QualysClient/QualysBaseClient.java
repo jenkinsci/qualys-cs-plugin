@@ -17,9 +17,11 @@ import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 class QualysBaseClient {
@@ -39,6 +41,25 @@ class QualysBaseClient {
         return url;
     }
 
+    /**
+     * Gateway base URL used for all Qualys API calls (same base as used by OAUTH).
+     */
+    public String getGatewayBaseUrl() {
+        return this.auth.getServer();
+    }
+
+    protected boolean isOidcAuth() {
+        return String.valueOf(this.auth.getAuthType()).equalsIgnoreCase("OIDC");
+    }
+
+    /**
+     * Human readable auth type used for logging. OIDC is surfaced as IDP.
+     */
+    public String getAuthTypeLabel() {
+        String type = String.valueOf(this.auth.getAuthType());
+        return type.equalsIgnoreCase("OIDC") ? "IDP" : type.toUpperCase(Locale.ROOT);
+    }
+
     protected Map<String, String> getAuthHeaders() throws UnsupportedEncodingException {
         Map<String, String> headers = new HashMap<>();
         headers.put("accept", "application/json");
@@ -49,8 +70,26 @@ class QualysBaseClient {
             headers.put("clientId", this.auth.getClientId());
             headers.put("clientSecret", this.auth.getClientSecret());
             return headers;
-        } else
+        } else if (isOidcAuth())
+            return headers;
+        else
             return null;
+    }
+
+    /**
+     * Resolves the full URL used for token generation.
+     * BASIC/OAUTH use the Qualys gateway auth endpoints; IDP (OIDC) uses the external token URL.
+     */
+    protected String getAuthUrl(Map<String, String> apiMap) throws MalformedURLException {
+        if (isOidcAuth()) {
+            String tokenUrl = this.auth.getTokenUrl();
+            if (tokenUrl == null || tokenUrl.trim().isEmpty()) {
+                throw new IllegalStateException("IDP tokenUrl is required to request an IDP access token.");
+            }
+            return tokenUrl.trim();
+        }
+        String endpoint = this.getAuthEndpoint(apiMap);
+        return (endpoint == null) ? null : this.getAbsoluteUrl(endpoint).toString();
     }
 
 
@@ -68,8 +107,28 @@ class QualysBaseClient {
             return this.getBasicAuthJWTEncodedEntity();
         else if (String.valueOf(this.auth.getAuthType()).equalsIgnoreCase("OAUTH"))
             return new byte[0];
+        else if (isOidcAuth())
+            return this.getOidcFormEncodedEntity();
         else
             return new byte[0];
+    }
+
+    /**
+     * Builds the client_credentials form body for the IDP (OIDC) token request.
+     */
+    protected byte[] getOidcFormEncodedEntity() throws UnsupportedEncodingException {
+        StringBuilder body = new StringBuilder("grant_type=client_credentials");
+        body.append("&client_id=").append(URLEncoder.encode(this.auth.getClientId(), "UTF-8"));
+        body.append("&client_secret=").append(URLEncoder.encode(this.auth.getClientSecret(), "UTF-8"));
+        String oidcScope = this.auth.getOidcScope();
+        if (oidcScope != null && !oidcScope.trim().isEmpty()) {
+            body.append("&scope=").append(URLEncoder.encode(oidcScope, "UTF-8"));
+        }
+        String audience = this.auth.getAudience();
+        if (audience != null && !audience.trim().isEmpty()) {
+            body.append("&audience=").append(URLEncoder.encode(audience, "UTF-8"));
+        }
+        return body.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     protected byte[] getBasicAuthJWTEncodedEntity() throws UnsupportedEncodingException {

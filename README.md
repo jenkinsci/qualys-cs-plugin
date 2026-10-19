@@ -87,3 +87,10 @@ If you are configuring pipeline project, click the `Generate Pipeline Script` bu
  * Added OAuth support(Authentication using client id and client secret)
  * Added support for KSA pod
  * For detailed information on upgrading of Qualys Container Scanning Connector to the 1.8.x version, please visit [user guide](https://www.qualys.com/docs/qualys-container-scanning-connector-jenkins-plugin-user-guide.pdf)
+
+## Release notes for v1.9.0.0
+ * Added IDP authentication support using client credentials (Client ID, Client Secret, Token URL, optional Scope and Audience)
+ * Vulnerabilities of type IGS (Information Gathered) are now excluded from the build failure criteria
+ * Plugin now requires Jenkins 2.568.2 or later and Java 21
+ * Minor log changes and bug fixes
+ * For detailed information on upgrading of Qualys Container Scanning Connector to the 1.9.x version, please visit [user guide](https://www.qualys.com/docs/qualys-container-scanning-connector-jenkins-plugin-user-guide.pdf)
