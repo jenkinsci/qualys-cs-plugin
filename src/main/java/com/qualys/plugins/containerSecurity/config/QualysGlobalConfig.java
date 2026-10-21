@@ -9,6 +9,7 @@ import com.qualys.plugins.containerSecurity.common.QualysAuth.QualysAuth;
 import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSClient;
 import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSTestConnectionResponse;
 import com.qualys.plugins.containerSecurity.util.OAuthCredential;
+import com.qualys.plugins.containerSecurity.util.OIDCCredential;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,7 +43,7 @@ import hudson.util.XStream2;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -161,6 +162,14 @@ public class QualysGlobalConfig extends GlobalConfiguration {
             result.add(label, c.getId());
         }
 
+        // OIDC: show "clientId (desc)"
+        for (OIDCCredential c : CredentialsProvider.lookupCredentials(
+                OIDCCredential.class, item, ACL.SYSTEM, Collections.emptyList())) {
+            String clientId = safe(c.getClientId());
+            String label = buildMaskedLabel(clientId, "*****", c.getDescription(), c.getId());
+            result.add(label, c.getId());
+        }
+
         return result.includeCurrentValue(credentialsId);
     }
     
@@ -228,6 +237,9 @@ public class QualysGlobalConfig extends GlobalConfiguration {
                 String clientId = oauth.getClientId();
                 String clientSecret = oauth.getClientSecret();
                 auth.setQualysCredentials(apiServer, AuthType.OAuth,"","",clientId,clientSecret);
+            } else if (credentials instanceof OIDCCredential) {
+                OIDCCredential oidc = (OIDCCredential) credentials;
+                auth.setQualysCredentials(apiServer, AuthType.OIDC, oidc.getClientId(), oidc.getClientSecret(), oidc.getTokenUrl(), oidc.getOidcScope(), oidc.getAudience());
             } else {
                 // handle unknown credential type
                 throw new IllegalArgumentException("Unsupported credential type: " + credentials.getClass());
@@ -579,19 +591,7 @@ public class QualysGlobalConfig extends GlobalConfiguration {
 
 	public String getPortalUrl(String apiServerURL)
 	{
-		String SCP_URL_PREFIX="https://qualysguard.";
-		String PCP_URL_PREFIX = "https://qualysgateway.";
-		String [] arr = apiServerURL.split("\\.");
-		String rest_url=String.join(".", Arrays.copyOfRange(arr, 1, arr.length));
-		String portalUrl="";
-
-		// String Compariosn includes qualys. and apps.qualys as Server URL contains either qualys or only apps.qualys.
-		// If it does not suffice the above condition it is PCP Server URL
-		if (rest_url.contains("qualys.") || rest_url.contains("apps.qualys")) {
-			portalUrl = SCP_URL_PREFIX + rest_url;
-		} else {
-			portalUrl = PCP_URL_PREFIX + rest_url;
-		}
+		String portalUrl = QualysAuth.toPortalUrl(apiServerURL);
 		logger.info("Converting serverUrl: " + apiServerURL + " to portalUrl:" + portalUrl);
 		return portalUrl;
 	}

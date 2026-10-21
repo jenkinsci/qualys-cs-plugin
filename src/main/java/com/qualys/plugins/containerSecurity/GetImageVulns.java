@@ -22,9 +22,7 @@ import com.qualys.plugins.containerSecurity.common.QualysAuth.QualysAuth;
 import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSClient;
 import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSTestConnectionResponse;
 import com.qualys.plugins.containerSecurity.common.QualysCriteria.QualysCriteria;
-import org.apache.commons.lang.StringUtils;
-
-
+import org.apache.commons.lang3.StringUtils;
 import com.qualys.plugins.containerSecurity.model.ProxyConfiguration;
 import com.qualys.plugins.containerSecurity.report.ReportAction;
 import com.qualys.plugins.containerSecurity.util.Helper;
@@ -75,6 +73,10 @@ public class GetImageVulns {
     	try {
     		buildLogger.println("Testing connection with Qualys API server...");
     		logger.info("Testing connection with Qualys API server...");
+    		String authTypeLabel = String.valueOf(auth.getAuthType());
+    		if (authTypeLabel.equalsIgnoreCase("OIDC")) { authTypeLabel = "IDP"; }
+    		buildLogger.println("Authentication Type: " + authTypeLabel.toUpperCase());
+    		logger.info("Authentication Type: " + authTypeLabel.toUpperCase());
     		//test connection
     		int retryCount = 0;
     		boolean retry = true;
@@ -91,7 +93,7 @@ public class GetImageVulns {
 		   			buildLogger.println("Test connection successful.");
 	    			logger.info("Test connection successful. Response code: " + resp.responseCode);
 	    			break;
-		   		}else if((resp.responseCode >= 500 && resp.responseCode <= 599 && retryCount < 3) || (resp.responseCode == 400 && retryCount < 3)) {
+		   		}else if(resp.responseCode >= 500 && resp.responseCode <= 599 && retryCount < 3) {
     				retry = true;
     				long secInMillis = TimeUnit.SECONDS.toMillis(5);
     				buildLogger.println("Something went wrong with server; Could be a temporary glitch. Retrying in 5 secs...");

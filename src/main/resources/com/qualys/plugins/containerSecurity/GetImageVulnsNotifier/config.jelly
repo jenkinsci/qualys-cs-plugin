@@ -77,11 +77,13 @@
 				x.insertAdjacentHTML('beforebegin', "&#160; &#160; &#160; &#160; &#160; &#160; &#160;" );
 				var e = document.createElement('div');
 				e.innerHTML = "&#160; &#160; &#160; &#160; &#160; &#160; &#160; Configure either QIDs or CVEs in below fields which should be ignored while evaluating failure conditions.";
-				var m = x.next();
-				for (var i = m.childElements().length; i &gt; 0; i--) {
-					m.removeChild(m.lastChild);
+				var m = x.nextElementSibling;
+				if (m != null) {
+					for (var i = m.children.length; i &gt; 0; i--) {
+						m.removeChild(m.lastChild);
+					}
+					m.appendChild(e);
 				}
-				m.appendChild(e);
 			}
 			var checkbx1 = document.getElementsByName("useGlobalConfig")[0];
 			var checkbx2 = document.getElementsByName("useLocalConfig")[0];

@@ -45,7 +45,7 @@ public class CvssCriteria {
                 typeDetected = vulnObject.get("typeDetected").getAsString();
             }
 
-            if (typeDetected.equals("POTENTIAL") && !checkPotentialVulns)
+            if (typeDetected.equals("IGS") || (typeDetected.equals("POTENTIAL") && !checkPotentialVulns))
                 continue;
             if (cvssVersion.equals("cvssmaxOfv2andv3Info")){
                 if ((vulnObject.has("cvssInfo") && !vulnObject.get("cvssInfo").isJsonNull()) || (vulnObject.has("cvss3Info") && !vulnObject.get("cvss3Info").isJsonNull()) ) {

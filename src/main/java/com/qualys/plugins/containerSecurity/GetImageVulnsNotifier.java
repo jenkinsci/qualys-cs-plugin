@@ -15,15 +15,16 @@ import com.qualys.plugins.containerSecurity.common.QualysAuth.QualysAuth;
 import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSClient;
 import com.qualys.plugins.containerSecurity.common.QualysClient.QualysCSTestConnectionResponse;
 import com.qualys.plugins.containerSecurity.util.OAuthCredential;
+import com.qualys.plugins.containerSecurity.util.OIDCCredential;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.Symbol;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -67,7 +68,7 @@ import jenkins.tasks.SimpleBuildStep;
 
 import static com.qualys.plugins.containerSecurity.util.Helper.buildMaskedLabel;
 import static com.qualys.plugins.containerSecurity.util.Helper.safe;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Extension
 public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
@@ -944,6 +945,9 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
                         String clientId = oauth.getClientId();
                         String clientSecret = oauth.getClientSecret();
                         auth.setQualysCredentials(apiServer, AuthType.OAuth,"","",clientId,clientSecret);
+                    } else if (credentials instanceof OIDCCredential) {
+                        OIDCCredential oidc = (OIDCCredential) credentials;
+                        auth.setQualysCredentials(apiServer, AuthType.OIDC, oidc.getClientId(), oidc.getClientSecret(), oidc.getTokenUrl(), oidc.getOidcScope(), oidc.getAudience());
                     } else
                         throw new IllegalArgumentException("Unsupported credential type: " + credentials.getClass());
                 } else
@@ -1005,6 +1009,7 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
 		int pollingIntervalForVulns = setTimeoutInSec("polling", DEFAULT_POLLING_INTERVAL_FOR_VULNS, pollingInterval, listener);
 		int timeoutToFetchVulnsInMillis = setTimeoutInSec("vulns", DEFAULT_TIMEOUT_FOR_VULNS, vulnsTimeout, listener);
     	QualysCSClient client = new QualysCSClient(auth, listener.getLogger());
+    	client.setBuildContext(true);
     	
     	boolean isFailConditionsConfigured = false;
     	if(isFailOnCVEs || isFailOnQidFound || isFailOnSevereVulns || isFailOnSoftware || failByCvss) {
@@ -1455,6 +1460,9 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
                         String clientId = oauth.getClientId();
                         String clientSecret = oauth.getClientSecret();
                         auth.setQualysCredentials(apiServer,AuthType.OAuth,"","",clientId,clientSecret);
+                    } else if (credentials instanceof OIDCCredential) {
+                        OIDCCredential oidc = (OIDCCredential) credentials;
+                        auth.setQualysCredentials(apiServer, AuthType.OIDC, oidc.getClientId(), oidc.getClientSecret(), oidc.getTokenUrl(), oidc.getOidcScope(), oidc.getAudience());
                     } else {
                         // handle unknown credential type
                         throw new IllegalArgumentException("Unsupported credential type: " + credentials.getClass());
@@ -1521,6 +1529,14 @@ public class GetImageVulnsNotifier extends Notifier implements SimpleBuildStep {
             // OAuth: show "clientId (desc)"
             for (OAuthCredential c : CredentialsProvider.lookupCredentials(
                     OAuthCredential.class, item, ACL.SYSTEM, Collections.emptyList())) {
+                String clientId = safe(c.getClientId());
+                String label = buildMaskedLabel(clientId, "*****", c.getDescription(), c.getId());
+                result.add(label, c.getId());
+            }
+
+            // OIDC: show "clientId (desc)"
+            for (OIDCCredential c : CredentialsProvider.lookupCredentials(
+                    OIDCCredential.class, item, ACL.SYSTEM, Collections.emptyList())) {
                 String clientId = safe(c.getClientId());
                 String label = buildMaskedLabel(clientId, "*****", c.getDescription(), c.getId());
                 result.add(label, c.getId());

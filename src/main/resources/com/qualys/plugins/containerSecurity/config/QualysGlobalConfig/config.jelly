@@ -246,8 +246,10 @@
 		x.insertAdjacentHTML('beforebegin', "&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;" );
 		var e = document.createElement('div');
 		e.innerHTML = "&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; Configure either QIDs or CVEs in below fields which should be ignored while evaluating failure conditions.";
-		var m = x.next();
-		m.appendChild(e);
+		var m = x.nextElementSibling;
+		if (m != null) {
+			m.appendChild(e);
+		}
 		
 		var polling = document.getElementsByName("_.pollingInterval")[0];
 		if(polling.value == ""){
